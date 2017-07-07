@@ -1,7 +1,9 @@
 **Setup**  
 _$ virtualenv flask_  
 _$ flask/bin/pip install flask_  
-_$ flask/bin/pip install flask-restful_
+_$ flask/bin/pip install flask-restful_  
+_$ flask/bin/pip install flask_cors_  
+_$ flask/bin/pip install Flask-PyMongo_
 
 **Run**  
 _$ ./app.py_
@@ -31,3 +33,4 @@ _$ curl -H "Content-Type: application/json" -X POST -d '{
 1. https://blog.miguelgrinberg.com/post/designing-a-restful-api-with-python-and-flask
 2. https://github.com/adam-p/markdown-here/wiki/Markdown-Cheatsheet
 3. https://flask-cors.readthedocs.io/en/latest/
+4. https://flask-pymongo.readthedocs.io/en/latest/

@@ -1,5 +1,6 @@
 import random
 
+
 class Chooser(object):
     def __init__(self, subjects):
         self.subjects = subjects
@@ -12,7 +13,7 @@ class Chooser(object):
         elif num_subjects == total_subjects:
             return self.subjects
         else:
-            #random!
+            # random!
             condition = True
             while condition:
                 indices = random.sample(range(0, total_subjects), 2)
