@@ -1,3 +1,4 @@
 flask/
 .idea/
 *.pyc
+.cache/
