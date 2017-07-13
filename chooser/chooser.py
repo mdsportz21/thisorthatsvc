@@ -13,6 +13,43 @@ class Chooser(object):
     def __init__(self, subject_repository):
         self.subject_repository = subject_repository
 
+    def choose_new(self, num_subjects=2):
+        """
+        We are only supporting choosing 2 subjects at present.
+        :type num_subjects: int
+        :rtype: list of SubjectRecord
+        """
+        """
+        Prerequisites:
+        Store (half) matrix of choices between two subjects
+        
+        def Algorithm (list of subject ids) = (list of subject ids)
+            Count victories of each subject (relative to rest of group)
+            Group subjects by number of victories in order (rough ordering, i.e. [BEF] [AD] [C]
+            result = []
+            if multiple groups:
+                For each group:
+                    result.extend(Algorithm(group)) # Combine the sorted groups in order
+            elif single element group: 
+                result = group
+            else: 
+                # manual sort
+                result = group
+                decisions_sorted_by_date_asc = get()
+                for each decision:
+                    result = reorder_by_moving_ahead(result, winner, loser)
+            return result
+                    
+        
+        Notes:
+        * maybe use default_dict for matrix? http://thinknook.com/two-dimensional-python-matrix-data-structure-with-string-indices-2013-01-17/
+        * use Counter::most_common() for ordering algorithm: https://docs.python.org/2/library/collections.html#counter-objects
+        ** Loop through these to create count groups, and sort the groups recursively
+        """
+        pass
+
+
+
     def choose(self, num_subjects=2):
         """
         We are only supporting choosing 2 subjects at present.
@@ -48,13 +85,11 @@ class Chooser(object):
         else:
             return self.choose_any_two(subjects_with_no_next)
 
-    def choose_any_two(self, subjects):
+    def choose_any_two(self, subject_records):
         """
-        :type subjects: list of SubjectRecord
+        :type subject_records: list of SubjectRecord
         :rtype: list of SubjectRecord
         """
-        two_subjects = []
-        indices = sample(range(0, len(subjects)), 2)
-        two_subjects.append(subjects[indices[0]])
-        two_subjects.append(subjects[indices[1]])
+        indices = sample(range(0, len(subject_records)), 2)
+        two_subjects = [subject_records[indices[0]], subject_records[indices[1]]]
         return two_subjects
