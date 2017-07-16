@@ -10,21 +10,24 @@ from ranker.ranker import Ranker
 from repository.subject_repository import SubjectRepository
 from util import to_dict
 
+from subject_record_dict import SubjectRecordDict
+
 app = Flask('thisorthat')
 CORS(app, resources={r"/api/*": {"origins": "http://localhost:3000"}})
 subject_repository = SubjectRepository(app)
-chooser = Chooser(subject_repository)
-ranker = Ranker(subject_repository)
+subject_record_dict = SubjectRecordDict(subject_repository)
 
 
 @app.route('/api/ranking', methods=['GET'])
 def get_ranking():
+    ranker = Ranker(subject_record_dict)
     ranked_subject_records = ranker.get_rankings()
     return to_json(ranked_subject_records)
 
 
 @app.route('/api/subjects', methods=['GET'])
 def get_subjects():
+    chooser = Chooser(subject_record_dict)
     subject_records = chooser.choose()
     return to_json(subject_records)
 

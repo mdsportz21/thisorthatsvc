@@ -1,76 +1,58 @@
+import util
 from model.record import SubjectRecord
-from repository.subject_repository import SubjectRepository
+from subject_record_dict import SubjectRecordDict
 
 
 class Ranker(object):
     """
-    :type subject_repository: SubjectRepository
+    :type subject_record_dict: SubjectRecordDict
     """
 
-    def __init__(self, subject_repository):
-        self.subject_repository = subject_repository
+    def __init__(self, subject_record_dict):
+        self.subject_record_dict = subject_record_dict
 
     def get_rankings(self):
         """
         :rtype: list of SubjectRecord
         """
-        subject_records = self.subject_repository.get_subject_records()
+        subject_records = self.subject_record_dict.get_subject_records()
         result = self.rank_subject_records(subject_records)
+        return result
 
+    # TODO: rank by winning percentage instead of number of victims
     def rank_subject_records(self, subject_records):
         """
-        Prerequisites:
-        Store (half) matrix of choices between two subjects
-
-        def Algorithm (list of subject ids) = (list of subject ids)
-            Count victories of each subject (relative to rest of group)
-            Group subjects by number of victories in order (rough ordering, i.e. {3:[B,E,F], 2:[A,D], 1:[C]}
-            result = []
-            if multiple groups:
-                For each group:
-                    result.extend(Algorithm(group)) # Combine the sorted groups in order
-            elif single element group:
-                result = group
-            else:
-                # manual sort
-                result = group
-                decisions_sorted_by_date_asc = get()
-                for each decision:
-                    result = reorder_by_moving_ahead(result, winner, loser)
-            return result
-
-
-        Notes:
-        * maybe use default_dict for matrix? http://thinknook.com/two-dimensional-python-matrix-data-structure-with-string-indices-2013-01-17/
-        * use Counter::most_common() for ordering algorithm: https://docs.python.org/2/library/collections.html#counter-objects
-        ** Loop through these to create count groups, and sort the groups recursively
+        Uses recursive bucket sort to sort subjects by relative number of victims.
+        Tie breaker is most recent date of comparison.
+        Returns subject records in order of ranking.
 
         We are only supporting choosing 2 subjects at present.
-        Returns subject records in order of ranking
+
         :type subject_records: list of SubjectRecord
         :rtype: list of SubjectRecord
         """
         result = []
         # count relative to other subjects in list
-        subject_records_by_victim_count = Ranker.get_subject_records_by_victim_count(subject_records)  # Bucket
+        subject_records_by_victim_count = self.get_subject_records_by_winning_percentage(subject_records)  # Bucket
         if len(subject_records_by_victim_count) == 0:
             return []
         if len(subject_records_by_victim_count) > 1:
-            for subject_record_tuple in sorted(subject_records_by_victim_count.items(),
-                                               key=lambda subjects_tuple: subjects_tuple[0], reverse=True):  # Sort buckets
+            subjects_by_victim_count_desc = sorted(subject_records_by_victim_count.items(),
+                                                   key=lambda subjects_tuple: subjects_tuple[0],
+                                                   reverse=True)
+            for subject_record_tuple in subjects_by_victim_count_desc:  # Sort buckets
                 subject_record_group = subject_record_tuple[1]
                 result.extend(self.rank_subject_records(subject_record_group))
         else:
             subject_record_group = subject_records_by_victim_count.itervalues().next()  # only group
             result = subject_record_group
-            if len(subject_record_group) > 1:
+            if len(subject_record_group) > 1:  # more than one subject in group
                 # manual sort
-                # get all comparisons in this format (my_subject_id, victim_subject_id, date)
-                comparison_subject_records = []
+                comparison_subject_records = []  # get all comparisons as (my_subject_id, victim_subject_id, date)
                 for subject_record in subject_record_group:
                     # Bastardizing the SubjectRecord class for comparisons
                     comparison_subject_records.extend(
-                        list(map((lambda victim: SubjectRecord(_id=subject_record.id, victims=[victim])),
+                        list(map((lambda victim: SubjectRecord(_id=subject_record.id, victims={victim})),
                                  subject_record.victims)))
                 comparison_subject_records_by_date_asc = sorted(comparison_subject_records,
                                                                 key=lambda record: record.victims[
@@ -86,7 +68,7 @@ class Ranker(object):
     @staticmethod
     def get_subject_records_by_victim_count(subject_records):
         """
-        For each subject_record, get number of victories relative to the rest of the list.
+        For each subject_record, get number of victories RELATIVE TO THE REST OF THE LIST.
         Return list of subject records by number of victims.
 
         :type subject_records: list of SubjectRecord
@@ -96,6 +78,21 @@ class Ranker(object):
         subject_record_ids = [subject_record.id for subject_record in subject_records]
         for subject_record in subject_records:
             victim_ids = [victim.victim_id for victim in subject_record.victims]
-            num_victories = sum(1 if victim_id in subject_record_ids else 0 for victim_id in victim_ids)
-            result.setdefault(num_victories, []).append(subject_record)
+            num_relative_victories = sum(1 if victim_id in subject_record_ids else 0 for victim_id in victim_ids)
+            result.setdefault(num_relative_victories, []).append(subject_record)
+        return result
+
+    def get_subject_records_by_winning_percentage(self, subject_records):
+        result = {}
+        subject_record_ids = [subject_record.id for subject_record in subject_records]
+        for subject_record in subject_records:
+            victim_ids = [victim.victim_id for victim in subject_record.victims]
+            local_win_count = sum(
+                1 if subject_record_id in subject_record_ids else 0 for subject_record_id in victim_ids)
+            loss_ids = self.subject_record_dict.get_loss_ids(subject_record.id)
+            faced_ids = victim_ids + list(loss_ids)
+            local_faced_count = sum(
+                1 if subject_record_id in subject_record_ids else 0 for subject_record_id in faced_ids)
+            local_winning_percentage = util.divide(local_win_count, local_faced_count) if local_faced_count != 0 else 0
+            result.setdefault(local_winning_percentage, []).append(subject_record)
         return result

@@ -56,7 +56,7 @@ class SubjectRecord(object):
         self._img_desc = img_desc
         self._description = description
         self._img_link = img_link
-        self._victims = victims
+        self._victims = victims if victims is not None else set()
 
     def __eq__(self, other):
         return self._id == other.id
@@ -116,27 +116,3 @@ class SubjectRecord(object):
     @victims.setter
     def victims(self, value):
         self._victims = value
-
-
-class SubjectRecordDict(object):
-    """
-    :type subject_records: list of SubjectRecord
-    :type subject_records_dict: dict[ObjectId, SubjectRecord]
-    """
-
-    def __init__(self, subject_records):
-        self.subject_records = subject_records
-        self.subject_records_dict = {record.id: record for record in subject_records}
-
-    def get_record(self, subject_id):
-        """
-        :type subject_id: ObjectId
-        :rtype: SubjectRecord
-        """
-        return self.subject_records_dict[subject_id]
-
-    def get_subject_records(self):
-        """
-        :rtype: list of SubjectRecord
-        """
-        return self.subject_records
