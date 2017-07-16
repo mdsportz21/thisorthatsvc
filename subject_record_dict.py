@@ -1,9 +1,8 @@
 from bson import ObjectId
 
+from model.record import SubjectRecord
 from model.record import Victim
 from repository.subject_repository import SubjectRepository
-from model.dto import SubjectDTO
-from model.record import SubjectRecord
 
 
 class SubjectRecordDict(object):
@@ -83,7 +82,7 @@ class SubjectRecordDict(object):
 
     def get_subject_record_ids_by_compared_count(self):
         """
-        :rtype: dict[int, list of SubjectRecord]
+        :rtype: dict[int, list of ObjectId]
         """
         result = {}
         for subject_record in self.get_subject_records():

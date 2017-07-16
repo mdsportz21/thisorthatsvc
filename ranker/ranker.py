@@ -19,7 +19,6 @@ class Ranker(object):
         result = self.rank_subject_records(subject_records)
         return result
 
-    # TODO: rank by winning percentage instead of number of victims
     def rank_subject_records(self, subject_records):
         """
         Uses recursive bucket sort to sort subjects by relative number of victims.
@@ -55,11 +54,10 @@ class Ranker(object):
                         list(map((lambda victim: SubjectRecord(_id=subject_record.id, victims={victim})),
                                  subject_record.victims)))
                 comparison_subject_records_by_date_asc = sorted(comparison_subject_records,
-                                                                key=lambda record: record.victims[
-                                                                    0].battle_date)  # type: list [SubjectRecord]
+                                                                key=lambda record: next(iter(record.victims)).battle_date)  # type: list [SubjectRecord]
                 for comparison_subject_record in comparison_subject_records_by_date_asc:
                     winner_index = result.index(SubjectRecord(_id=comparison_subject_record.id))
-                    loser_index = result.index(SubjectRecord(_id=comparison_subject_record.victims[0].victim_id))
+                    loser_index = result.index(SubjectRecord(_id=next(iter(comparison_subject_record.victims)).victim_id))
                     if winner_index > loser_index:
                         result.insert(loser_index, result.pop(winner_index))
 

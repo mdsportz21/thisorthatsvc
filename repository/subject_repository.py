@@ -45,14 +45,16 @@ class SubjectRepository(object):
         winner_ids = [subject_dto.subjectId for subject_dto in subject_dtos if subject_dto.selected]
         loser_ids = [subject_dto.subjectId for subject_dto in subject_dtos if not subject_dto.selected]
         for winner_id in winner_ids:
-            winner_subject = self.get_record(winner_id)
+            winner_subject = self.get_subject_record(winner_id)
             winner_victims = winner_subject.victims
             for loser_id in loser_ids:
                 winner_victims.add(Victim.create_victim(loser_id))
             self.subject_dao.update_victims(winner_id, winner_victims)
         for loser_id in loser_ids:
-            loser_subject = self.get_record(loser_id)
+            loser_subject = self.get_subject_record(loser_id)
             loser_victims = loser_subject.victims
             for winner_id in winner_ids:
-                loser_victims.remove(Victim.create_victim(winner_id))
+                old_victim = Victim.create_victim(winner_id)
+                if old_victim in loser_victims:
+                    loser_victims.remove(old_victim)
             self.subject_dao.update_victims(loser_id, loser_victims)

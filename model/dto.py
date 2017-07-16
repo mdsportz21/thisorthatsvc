@@ -1,4 +1,5 @@
 from bson.objectid import ObjectId
+import six
 
 
 class SubjectDTO(object):
@@ -20,6 +21,8 @@ class SubjectDTO(object):
     def subject_dto_factory(subject_dto_dict):
         subject = SubjectDTO()
         subject.update(**subject_dto_dict)
+        if subject.subjectId is not None and isinstance(subject.subjectId, six.string_types):
+            subject.subjectId = ObjectId(subject.subjectId)
         return subject
 
     def update(self, **kwargs):

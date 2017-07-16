@@ -2,7 +2,7 @@ from bson.objectid import ObjectId
 from flask_pymongo import PyMongo
 
 from model.record import SubjectRecord
-from util import to_dict
+from util import to_dicts
 from model.record import Victim
 
 
@@ -18,7 +18,7 @@ class SubjectDAO(object):
         """
         :type subject_records: list of SubjectRecord
         """
-        self.mongo.db.subjects.insert_many([to_dict(subject_record) for subject_record in subject_records])
+        self.mongo.db.subjects.insert_many(to_dicts(subject_records))
 
     def get_subjects(self):
         """
@@ -31,7 +31,7 @@ class SubjectDAO(object):
         :param subject_id: ObjectId
         :rtype:
         """
-        return self.mongo.db.subjects.find({'_id': subject_id})
+        return self.mongo.db.subjects.find_one({'_id': subject_id})
 
     def update_victims(self, subject_id, victims):
         """
@@ -39,5 +39,5 @@ class SubjectDAO(object):
         :type victims: set of Victim
         """
         self.mongo.db.subjects.find_one_and_update(
-            {'_id': subject_id}, {'$set': {'_victims': victims}}
+            {'_id': subject_id}, {'$set': {'_victims': list(to_dicts(victims))}}
         )

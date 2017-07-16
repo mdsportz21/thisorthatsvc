@@ -15,13 +15,19 @@ subject_ids = {
 }
 
 
+def create_subject_record_dict(mock_subject_repository, get_subject_records_return_value):
+    mock_subject_repository.get_subject_records.return_value = get_subject_records_return_value
+    subject_record_dict = SubjectRecordDict(mock_subject_repository)
+    return subject_record_dict
+
+
 @patch('repository.subject_repository.SubjectRepository')
 def test_is_all_compared_all_compared(mock_subject_repository):
-    mock_subject_repository.get_subject_records.return_value = [
+    test_data = [
         SubjectRecord(_id=subject_ids['a'], victims={Victim.create_victim(subject_ids['b'])}),
         SubjectRecord(_id=subject_ids['b'])
     ]
-    subject_record_dict = SubjectRecordDict(mock_subject_repository)
+    subject_record_dict = create_subject_record_dict(mock_subject_repository, test_data)
 
     is_all_compared = subject_record_dict.is_all_compared()
 
@@ -30,12 +36,12 @@ def test_is_all_compared_all_compared(mock_subject_repository):
 
 @patch('repository.subject_repository.SubjectRepository')
 def test_is_all_compared_all_not_compared(mock_subject_repository):
-    mock_subject_repository.get_subject_records.return_value = [
+    test_data = [
         SubjectRecord(_id=subject_ids['a'], victims={Victim.create_victim(subject_ids['b'])}),
         SubjectRecord(_id=subject_ids['b']),
         SubjectRecord(_id=subject_ids['c'])
     ]
-    subject_record_dict = SubjectRecordDict(mock_subject_repository)
+    subject_record_dict = create_subject_record_dict(mock_subject_repository, test_data)
 
     is_all_compared = subject_record_dict.is_all_compared()
 
@@ -44,12 +50,12 @@ def test_is_all_compared_all_not_compared(mock_subject_repository):
 
 @patch('repository.subject_repository.SubjectRepository')
 def test_get_subject_record_ids_by_compared_count(mock_subject_repository):
-    mock_subject_repository.get_subject_records.return_value = [
+    test_data = [
         SubjectRecord(_id=subject_ids['a'], victims={Victim.create_victim(subject_ids['b'])}),
         SubjectRecord(_id=subject_ids['b']),
         SubjectRecord(_id=subject_ids['c'])
     ]
-    subject_record_dict = SubjectRecordDict(mock_subject_repository)
+    subject_record_dict = create_subject_record_dict(mock_subject_repository, test_data)
 
     subject_record_ids_by_compared_count = subject_record_dict.get_subject_record_ids_by_compared_count()
     assert len(subject_record_ids_by_compared_count) == 2
@@ -67,13 +73,12 @@ def test_get_subject_record_ids_by_compared_count(mock_subject_repository):
 
 @patch('repository.subject_repository.SubjectRepository')
 def test_get_compared_count(mock_subject_repository):
-    mock_subject_repository.get_subject_records.return_value = [
+    test_data = [
         SubjectRecord(_id=subject_ids['a'], victims={Victim.create_victim(subject_ids['b'])}),
         SubjectRecord(_id=subject_ids['b']),
         SubjectRecord(_id=subject_ids['c'])
     ]
-
-    subject_record_dict = SubjectRecordDict(mock_subject_repository)
+    subject_record_dict = create_subject_record_dict(mock_subject_repository, test_data)
 
     a_count = subject_record_dict.get_compared_count(subject_ids['a'])
     assert a_count == 1
@@ -87,13 +92,13 @@ def test_get_compared_count(mock_subject_repository):
 
 @patch('repository.subject_repository.SubjectRepository')
 def test_get_loss_ids(mock_subject_repository):
-    mock_subject_repository.get_subject_records.return_value = [
+    test_data = [
         SubjectRecord(_id=subject_ids['a'], victims={Victim.create_victim(subject_ids['b'])}),
         SubjectRecord(_id=subject_ids['b']),
         SubjectRecord(_id=subject_ids['c'], victims={Victim.create_victim(subject_ids['b'])})
     ]
 
-    subject_record_dict = SubjectRecordDict(mock_subject_repository)
+    subject_record_dict = create_subject_record_dict(mock_subject_repository, test_data)
 
     b_loss_ids = subject_record_dict.get_loss_ids(subject_ids['b'])
     assert len(b_loss_ids) == 2
@@ -106,13 +111,12 @@ def test_get_loss_ids(mock_subject_repository):
 
 @patch('repository.subject_repository.SubjectRepository')
 def test_get_not_compared_ids(mock_subject_repository):
-    mock_subject_repository.get_subject_records.return_value = [
+    test_data = [
         SubjectRecord(_id=subject_ids['a'], victims={Victim.create_victim(subject_ids['b'])}),
         SubjectRecord(_id=subject_ids['b']),
         SubjectRecord(_id=subject_ids['c'], victims={Victim.create_victim(subject_ids['b'])})
     ]
-
-    subject_record_dict = SubjectRecordDict(mock_subject_repository)
+    subject_record_dict = create_subject_record_dict(mock_subject_repository, test_data)
 
     a_not_compared_ids = subject_record_dict.get_not_compared_ids(subject_ids['a'])
     assert len(a_not_compared_ids) == 1
@@ -121,13 +125,12 @@ def test_get_not_compared_ids(mock_subject_repository):
 
 @patch('repository.subject_repository.SubjectRepository')
 def test_get_not_victim_ids(mock_subject_repository):
-    mock_subject_repository.get_subject_records.return_value = [
+    test_data = [
         SubjectRecord(_id=subject_ids['a'], victims={Victim.create_victim(subject_ids['b'])}),
         SubjectRecord(_id=subject_ids['b']),
         SubjectRecord(_id=subject_ids['c'], victims={Victim.create_victim(subject_ids['b'])})
     ]
-
-    subject_record_dict = SubjectRecordDict(mock_subject_repository)
+    subject_record_dict = create_subject_record_dict(mock_subject_repository, test_data)
 
     a_not_victim_ids = subject_record_dict.get_not_victim_ids(subject_ids['a'])
     assert len(a_not_victim_ids) == 1
@@ -140,14 +143,13 @@ def test_get_not_victim_ids(mock_subject_repository):
 
 
 @patch('repository.subject_repository.SubjectRepository')
-def test_get_not_victim_ids(mock_subject_repository):
-    mock_subject_repository.get_subject_records.return_value = [
+def test_was_compared(mock_subject_repository):
+    test_data = [
         SubjectRecord(_id=subject_ids['a'], victims={Victim.create_victim(subject_ids['b'])}),
         SubjectRecord(_id=subject_ids['b']),
         SubjectRecord(_id=subject_ids['c'], victims={Victim.create_victim(subject_ids['b'])})
     ]
-
-    subject_record_dict = SubjectRecordDict(mock_subject_repository)
+    subject_record_dict = create_subject_record_dict(mock_subject_repository, test_data)
 
     ab_was_compared = subject_record_dict.was_compared(subject_ids['a'], subject_ids['b'])
     assert ab_was_compared
@@ -155,19 +157,6 @@ def test_get_not_victim_ids(mock_subject_repository):
     assert bc_was_compared
     ac_was_compared = subject_record_dict.was_compared(subject_ids['a'], subject_ids['c'])
     assert not ac_was_compared
-
-
-@patch('repository.subject_repository.SubjectRepository')
-def test_get_not_victim_ids(mock_subject_repository):
-    mock_subject_repository.get_subject_records.return_value = [
-        SubjectRecord(_id=subject_ids['a'], victims={Victim.create_victim(subject_ids['b'])}),
-        SubjectRecord(_id=subject_ids['b']),
-        SubjectRecord(_id=subject_ids['c'], victims={Victim.create_victim(subject_ids['b'])})
-    ]
-
-    subject_record_dict = SubjectRecordDict(mock_subject_repository)
-
-
 
 
 if __name__ == '__main__':

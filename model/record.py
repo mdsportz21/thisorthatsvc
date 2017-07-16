@@ -1,11 +1,17 @@
-from arrow import Arrow
+import arrow
+import six
 from bson.objectid import ObjectId
 
 
-class Victim(object):
+class BaseRecord(object):
+    def update(self, **kwargs):
+        self.__dict__.update(kwargs)
+
+
+class Victim(BaseRecord):
     """
     :type victim_id: ObjectId
-    :type battle_date:
+    :type battle_date: arrow.Arrow
     """
 
     def __init__(self, victim_id=None, battle_date=None):
@@ -39,10 +45,22 @@ class Victim(object):
 
     @staticmethod
     def create_victim(victim_id):
-        return Victim(victim_id, Arrow.utcnow())
+        return Victim(victim_id, arrow.Arrow.utcnow())
+
+    @staticmethod
+    def victim_factory(victim_dict):
+        """
+        :type victim_dict: dict
+        :rtype: Victim
+        """
+        victim = Victim()
+        victim.update(**victim_dict)
+        if victim.battle_date is not None and isinstance(victim.battle_date, six.string_types):
+            victim.battle_date = arrow.get(victim.battle_date)
+        return victim
 
 
-class SubjectRecord(object):
+class SubjectRecord(BaseRecord):
     """
     :type _id: ObjectId
     :type img_desc: str
@@ -72,10 +90,11 @@ class SubjectRecord(object):
         """
         subject = SubjectRecord()
         subject.update(**subject_record_dict)
+        victims = set()
+        for victim_dict in subject.victims:
+            victims.add(Victim.victim_factory(victim_dict))
+        subject.victims = victims
         return subject
-
-    def update(self, **kwargs):
-        self.__dict__.update(kwargs)
 
     @property
     def id(self):
