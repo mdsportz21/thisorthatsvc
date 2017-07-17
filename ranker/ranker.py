@@ -40,24 +40,29 @@ class Ranker(object):
                                                    key=lambda subjects_tuple: subjects_tuple[0],
                                                    reverse=True)
             for subject_record_tuple in subjects_by_victim_count_desc:  # Sort buckets
-                subject_record_group = subject_record_tuple[1]
-                result.extend(self.rank_subject_records(subject_record_group))
+                subject_group_records = subject_record_tuple[1]
+                result.extend(self.rank_subject_records(subject_group_records))
         else:
-            subject_record_group = subject_records_by_victim_count.itervalues().next()  # only group
-            result = subject_record_group
-            if len(subject_record_group) > 1:  # more than one subject in group
+            subject_group_records = subject_records_by_victim_count.itervalues().next()  # only group
+            result = subject_group_records
+            if len(subject_group_records) > 1:  # more than one subject in group
                 # manual sort
                 comparison_subject_records = []  # get all comparisons as (my_subject_id, victim_subject_id, date)
-                for subject_record in subject_record_group:
-                    # Bastardizing the SubjectRecord class for comparisons
-                    comparison_subject_records.extend(
-                        list(map((lambda victim: SubjectRecord(_id=subject_record.id, victims={victim})),
-                                 subject_record.victims)))
+                subject_group_record_ids = [subject_record.id for subject_record in subject_group_records]
+                for subject_record in subject_group_records:
+                    for victim in subject_record.victims:
+                        if victim.victim_id in subject_group_record_ids:
+                            # Bastardizing the SubjectRecord class for comparisons
+                            #   since SubjectRecord only uses id to compare
+                            comparison_subject_record = SubjectRecord(_id=subject_record.id, victims={victim})
+                            comparison_subject_records.append(comparison_subject_record)
                 comparison_subject_records_by_date_asc = sorted(comparison_subject_records,
-                                                                key=lambda record: next(iter(record.victims)).battle_date)  # type: list [SubjectRecord]
+                                                                key=lambda record: next(iter(
+                                                                    record.victims)).battle_date)
                 for comparison_subject_record in comparison_subject_records_by_date_asc:
                     winner_index = result.index(SubjectRecord(_id=comparison_subject_record.id))
-                    loser_index = result.index(SubjectRecord(_id=next(iter(comparison_subject_record.victims)).victim_id))
+                    loser_index = result.index(
+                        SubjectRecord(_id=next(iter(comparison_subject_record.victims)).victim_id))
                     if winner_index > loser_index:
                         result.insert(loser_index, result.pop(winner_index))
 
