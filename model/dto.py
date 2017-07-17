@@ -1,5 +1,7 @@
-from bson.objectid import ObjectId
 import six
+from bson.objectid import ObjectId
+
+from model.record import SubjectRecord
 
 
 class SubjectDTO(object):
@@ -10,6 +12,7 @@ class SubjectDTO(object):
     :type imgLink: str
     :type selected: bool
     """
+
     def __init__(self, subjectId=None, imgDesc=None, description=None, imgLink=None, selected=None):
         self.subjectId = subjectId
         self.imgDesc = imgDesc
@@ -27,3 +30,36 @@ class SubjectDTO(object):
 
     def update(self, **kwargs):
         self.__dict__.update(kwargs)
+
+
+class RankingDTO(object):
+    """
+    :type subjectId: ObjectId
+    :type imgDesc: str
+    :type description: str
+    :type imgLink: str
+    :type rank: int
+    :type victims: list of ObjectId
+    """
+
+    def __init__(self, subject_id=None, img_desc=None, description=None, img_link=None, rank=None, victims=None):
+        self.subjectId = subject_id
+        self.imgDesc = img_desc
+        self.description = description
+        self.imgLink = img_link
+        self.rank = rank
+        self.victims = victims
+
+    @staticmethod
+    def to_ranking_dto(subject_record, rank):
+        """
+        :type subject_record: SubjectRecord
+        :type rank: int
+        :rtype: RankingDTO
+        """
+        victims = [str(victim.victim_id) for victim in subject_record.victims]
+        ranking_dto = RankingDTO(subject_id=str(subject_record.id), img_desc=subject_record.img_desc,
+                                 description=subject_record.description,
+                                 img_link=subject_record.img_link, rank=rank,
+                                 victims=victims)
+        return ranking_dto

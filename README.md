@@ -1,15 +1,14 @@
 **TODO**  
-1. Display rankings on right-half of the screen!  
-a. Extra credit: On mobile, it should show rankings below
-b. Extra credit: show in table names and small thumbnails
-2. Create ranking object with the following attributes:  
+1. ~~Display rankings on right-half of the screen!~~  
+a. Extra credit: On mobile, it should show rankings below  
+b. ~~Extra credit: show in table names and small thumbnails~~
+1. Create ranking object with the following attributes:  
 a. my subject number rank  
-b. list of subjects I beat  
-3. Make list of subject I beat clickable  
-4. Show percentage completed 
-a. len(comparisons) / total number permutations (i.e. sum(i for i in range(1,len(subjects))))  
-5. Write scraper for hatz.squarespace.com  
-6. Insert scraper data
+b. list of subjects I beat, where each subject is a link that pulls up the two hats for a comparison  
+1. Show percentage completed  
+a. len(comparisons) / sum(i for i in range(1,len(subjects)))  
+1. Write scraper for hatz.squarespace.com  
+1. Insert scraper data
 
 **Setup**  
 _$ virtualenv flask_  

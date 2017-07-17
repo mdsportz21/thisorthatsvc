@@ -5,6 +5,7 @@ from flask_cors import CORS
 
 from chooser.chooser import Chooser
 from model import codec
+from model.dto import RankingDTO
 from model.dto import SubjectDTO
 from ranker.ranker import Ranker
 from repository.subject_repository import SubjectRepository
@@ -22,7 +23,9 @@ def get_ranking():
     subject_record_dict = SubjectRecordDict(subject_repository)
     ranker = Ranker(subject_record_dict)
     ranked_subject_records = ranker.get_rankings()
-    return to_json(ranked_subject_records, 'rankings')
+    ranking_dtos = [RankingDTO.to_ranking_dto(subject_record, rank + 1) for rank, subject_record in
+                    enumerate(ranked_subject_records)]
+    return to_json(ranking_dtos, 'rankings')
 
 
 @app.route('/api/subjects', methods=['GET'])
@@ -30,13 +33,13 @@ def get_subjects():
     subject_record_dict = SubjectRecordDict(subject_repository)
     chooser = Chooser(subject_record_dict)
     subject_records = chooser.choose()
-    return to_json(subject_records)
-
-
-def to_json(subject_records, name='subjects'):
     subject_dtos = codec.from_subject_records(subject_records)
-    subjects = [to_dict(subject_dto) for subject_dto in subject_dtos]
-    return dumps({name: subjects})
+    return to_json(subject_dtos)
+
+
+def to_json(items, name='subjects'):
+    json_items = [to_dict(item) for item in items]
+    return dumps({name: json_items})
 
 
 @app.route('/api/subjects', methods=['POST'])
