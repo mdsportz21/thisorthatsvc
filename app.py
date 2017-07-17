@@ -22,7 +22,7 @@ def get_ranking():
     subject_record_dict = SubjectRecordDict(subject_repository)
     ranker = Ranker(subject_record_dict)
     ranked_subject_records = ranker.get_rankings()
-    return to_json(ranked_subject_records)
+    return to_json(ranked_subject_records, 'rankings')
 
 
 @app.route('/api/subjects', methods=['GET'])
