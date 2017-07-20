@@ -48,3 +48,14 @@ class Chooser(object):
         indices = sample(range(0, len(subject_records)), 2)
         two_subjects = [subject_records[indices[0]], subject_records[indices[1]]]
         return two_subjects
+
+    def get_percentage_completed(self):
+        """
+        :rtype: float
+        """
+        num_comparisons = 0
+        subject_records = self.subject_record_dict.subject_records
+        for subject_record in subject_records:
+            num_comparisons += len(subject_record.victims)
+        num_possible_comparisons = sum(i for i in range(1, len(subject_records)))
+        return num_comparisons / float(num_possible_comparisons)

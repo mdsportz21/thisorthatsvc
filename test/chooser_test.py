@@ -63,5 +63,31 @@ def test_choose_2(mock_subject_repository):
     assert subject_ids['e'] in subject_record_ids
 
 
+@patch('repository.subject_repository.SubjectRepository')
+def test_get_percentage_completed(mock_subject_repository):
+    test_data = [
+        SubjectRecord(_id=subject_ids['a'],  # 4-0
+                      victims={
+                          Victim.create_victim(subject_ids['b']),
+                          Victim.create_victim(subject_ids['c']),
+                          Victim.create_victim(subject_ids['d']),
+                          Victim.create_victim(subject_ids['e'])}),
+        SubjectRecord(_id=subject_ids['b'],  # 2-1
+                      victims={
+                          Victim.create_victim(subject_ids['c']),
+                          Victim.create_victim(subject_ids['d']),
+                          Victim.create_victim(subject_ids['e'])}),
+        SubjectRecord(_id=subject_ids['c']),  # 0-2
+        SubjectRecord(_id=subject_ids['d']),  # 0-1
+        SubjectRecord(_id=subject_ids['e']),  # 0-1
+        SubjectRecord(_id=subject_ids['f'])  # 0-1
+    ]
+
+    chooser = create_chooser(mock_subject_repository, test_data)
+    percentage_completed = chooser.get_percentage_completed()
+    expected_percentaged_completed = 7 / float(15)
+    assert abs(expected_percentaged_completed - percentage_completed) <= 0.001
+
+
 if __name__ == '__main__':
-    test_choose()
+    test_get_percentage_completed()

@@ -34,12 +34,16 @@ def get_subjects():
     chooser = Chooser(subject_record_dict)
     subject_records = chooser.choose()
     subject_dtos = codec.from_subject_records(subject_records)
-    return to_json(subject_dtos)
+    percentage_completed = chooser.get_percentage_completed()
+    return to_json(subject_dtos, 'subjects', {'percentCompleted': percentage_completed})
 
 
-def to_json(items, name='subjects'):
+def to_json(items, name='subjects', other_dict=None):
     json_items = [to_dict(item) for item in items]
-    return dumps({name: json_items})
+    results = {name: json_items}
+    if other_dict is not None:
+        results.update(other_dict)
+    return dumps(results)
 
 
 @app.route('/api/subjects', methods=['POST'])
