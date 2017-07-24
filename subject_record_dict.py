@@ -57,9 +57,10 @@ class SubjectRecordDict(object):
         :type subject_record_id: ObjectId
         :return: list of ObjectId
         """
-        not_victim_ids = self.get_not_victim_ids(subject_record_id)
-        not_compared_ids = [not_victim_id for not_victim_id in not_victim_ids if
-                            not self.was_compared(subject_record_id, not_victim_id)]
+        subject_ids = set([subject_record.id for subject_record in self.get_subject_records()])
+        subject_ids.remove(subject_record_id)
+        not_compared_ids = [other_id for other_id in subject_ids if
+                            not self.was_compared(subject_record_id, other_id)]
         return not_compared_ids
 
     def get_loss_ids(self, subject_record_id):
@@ -67,9 +68,12 @@ class SubjectRecordDict(object):
         :type subject_record_id: ObjectId
         :rtype: set of ObjectId
         """
-        not_victim_ids = self.get_not_victim_ids(subject_record_id)
-        not_compared_ids = self.get_not_compared_ids(subject_record_id)
-        victorious_opponent_ids = not_victim_ids.difference(not_compared_ids)
+        subject_ids = set([subject_record.id for subject_record in self.get_subject_records()])
+        subject_ids.remove(subject_record_id)
+        subject_record = self.get_record(subject_record_id)
+        victim_ids = [victim.victim_id for victim in subject_record.victims]
+        victorious_opponent_ids = [other_id for other_id in subject_ids if
+                                   (self.was_compared(subject_record_id, other_id) and other_id not in victim_ids)]
         return victorious_opponent_ids
 
     def get_compared_count(self, subject_record_id):

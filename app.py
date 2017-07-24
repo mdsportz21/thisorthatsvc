@@ -7,8 +7,10 @@ from chooser.chooser import Chooser
 from model import codec
 from model.dto import RankingDTO
 from model.dto import SubjectDTO
+
 from ranker.ranker import Ranker
 from repository.subject_repository import SubjectRepository
+from scraper import scraper
 from subject_record_dict import SubjectRecordDict
 from util import to_dict
 
@@ -25,6 +27,7 @@ def get_ranking():
     ranked_subject_records = ranker.get_rankings()
     ranking_dtos = [RankingDTO.to_ranking_dto(subject_record, rank + 1) for rank, subject_record in
                     enumerate(ranked_subject_records)]
+    ranker.fill_wins_and_faced(ranking_dtos)
     return to_json(ranking_dtos, 'rankings')
 
 
@@ -65,6 +68,14 @@ def save_subject_selection():
     return dumps({'responseSaved': True}), 200
 
 
+@app.route('/api/scrape', methods=['POST'])
+def scrape_for_new_subjects():
+    subject_dtos = scraper.get_subject_dtos()
+    subject_repository.store_subject_dtos(subject_dtos)
+
+    return dumps({'scrapeSuccessful': True}), 200
+
+
 @app.errorhandler(404)
 def not_found():
     return make_response(jsonify({'error': 'Not found'}), 404)
@@ -77,17 +88,3 @@ def custom400(error):
 
 if __name__ == '__main__':
     app.run(debug=True)
-
-    # with app.app_context():
-    # # Test insert:
-    # test_subject_dtos = [
-    #     SubjectDTO(imgDesc="Charleston River Dogs", description="Charleston River Dogs", imgLink="https://static1.squarespace.com/static/594061048419c282ed731d4a/5949b25b86e6c05c7d5cf26d/5949b27f6b8f5bfb66cee7e1/1498002048239/thumb+%2814%29.jpeg?format=1500w"),
-    #     SubjectDTO(imgDesc="Augusta Greenjackets", description="Augusta Greenjackets", imgLink="https://static1.squarespace.com/static/594061048419c282ed731d4a/59420b38893fc0f697291aa6/59420c2cb3db2bab436210dc/1497500717718/thumb.jpeg?format=1500w"),
-    #     SubjectDTO(imgDesc="Biloxi Shuckers", description="Biloxi Shuckers", imgLink="https://static1.squarespace.com/static/594061048419c282ed731d4a/5942ff9f3e00be915c807ade/59443fdb17bffcdd0ef9e6fe/1497645020298/thumb+%282%29.jpeg?format=2500w"),
-    #     SubjectDTO(imgDesc="Burlington Bees", description="Burlington Bees", imgLink="https://static1.squarespace.com/static/594061048419c282ed731d4a/59496f1fdb29d6f4e5731f2d/59496f3d414fb5804d2dab58/1497984834262/thumb+%2810%29.jpeg?format=2500w")
-    # ]
-    # subject_repository.store_subject_dtos(test_subject_dtos)
-
-    # # Test fetch
-    # subjects = subject_repository.get_subject_records()
-    # print SubjectRecord.subject_record_factory(subjects[0])

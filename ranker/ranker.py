@@ -1,6 +1,9 @@
 import util
+from model.dto import RankingDTO
 from model.record import SubjectRecord
 from subject_record_dict import SubjectRecordDict
+from bson import ObjectId
+from model.record import Victim
 
 
 class Ranker(object):
@@ -32,18 +35,19 @@ class Ranker(object):
         """
         result = []
         # count relative to other subjects in list
-        subject_records_by_victim_count = self.get_subject_records_by_winning_percentage(subject_records)  # Bucket
-        if len(subject_records_by_victim_count) == 0:
+        subject_records_by_winning_percentage = self.get_subject_records_by_winning_percentage(
+            subject_records)  # Bucket
+        if len(subject_records_by_winning_percentage) == 0:
             return []
-        if len(subject_records_by_victim_count) > 1:
-            subjects_by_victim_count_desc = sorted(subject_records_by_victim_count.items(),
+        if len(subject_records_by_winning_percentage) > 1:
+            subjects_by_victim_count_desc = sorted(subject_records_by_winning_percentage.items(),
                                                    key=lambda subjects_tuple: subjects_tuple[0],
                                                    reverse=True)
             for subject_record_tuple in subjects_by_victim_count_desc:  # Sort buckets
                 subject_group_records = subject_record_tuple[1]
                 result.extend(self.rank_subject_records(subject_group_records))
         else:
-            subject_group_records = subject_records_by_victim_count.itervalues().next()  # only group
+            subject_group_records = subject_records_by_winning_percentage.itervalues().next()  # only group
             result = subject_group_records
             if len(subject_group_records) > 1:  # more than one subject in group
                 # manual sort
@@ -90,12 +94,28 @@ class Ranker(object):
         subject_record_ids = [subject_record.id for subject_record in subject_records]
         for subject_record in subject_records:
             victim_ids = [victim.victim_id for victim in subject_record.victims]
-            local_win_count = sum(
-                1 if subject_record_id in subject_record_ids else 0 for subject_record_id in victim_ids)
-            loss_ids = self.subject_record_dict.get_loss_ids(subject_record.id)
-            faced_ids = victim_ids + list(loss_ids)
-            local_faced_count = sum(
-                1 if subject_record_id in subject_record_ids else 0 for subject_record_id in faced_ids)
+            local_win_count, local_faced_count = self.get_wins_and_faced(subject_record.id, victim_ids,
+                                                                         subject_record_ids)
             local_winning_percentage = util.divide(local_win_count, local_faced_count) if local_faced_count != 0 else 0
             result.setdefault(local_winning_percentage, []).append(subject_record)
         return result
+
+    def get_wins_and_faced(self, subject_id, victim_ids, subject_record_ids):
+        # type: (ObjectId|str, list[ObjectId]|list[str], list[ObjectId]|list[str]) -> object
+        local_win_count = sum(1 if subject_record_id in subject_record_ids else 0 for subject_record_id in victim_ids)
+        loss_ids = self.subject_record_dict.get_loss_ids(ObjectId(subject_id))
+        faced_ids = victim_ids + list(loss_ids)
+        subject_ids = [ObjectId(subject_id) for subject_id in subject_record_ids]
+        faced_ids = [ObjectId(faced_id) for faced_id in faced_ids]
+        local_faced_count = sum(1 if subject_record_id in subject_ids else 0 for subject_record_id in faced_ids)
+        return local_win_count, local_faced_count
+
+    def fill_wins_and_faced(self, subject_rankings_dtos):
+        # type: (list[RankingDTO]) -> None
+        subject_record_ids = [subject_ranking.subjectId for subject_ranking in subject_rankings_dtos]
+        for subject_ranking in subject_rankings_dtos:
+            local_win_count, local_faced_count = self.get_wins_and_faced(subject_ranking.subjectId,
+                                                                         subject_ranking.victims,
+                                                                         subject_record_ids)
+            subject_ranking.wins = local_win_count
+            subject_ranking.faced = local_faced_count

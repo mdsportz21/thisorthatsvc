@@ -13,6 +13,8 @@ def to_dict(obj):
             del copy_dict[k]
         elif isinstance(v, arrow.Arrow):
             copy_dict[k] = v.for_json()
+        elif isinstance(v, set):
+            copy_dict[k] = list(to_dicts(v))
     return copy_dict
 
 

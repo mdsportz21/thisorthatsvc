@@ -6,9 +6,9 @@ b. ~~Extra credit: show in table names and small thumbnails~~
 a. ~~my subject number rank~~  
 b. ~~list of subjects I beat,~~  
 c. each subject is a link that pulls up the two hats for a comparison or navigate to that hat in the rankings 
-d. win-loss record
-1. Show percentage completed  
-a. len(comparisons) / sum(i for i in range(1,len(subjects)))  
+d. win-loss record  
+1. ~~Show percentage completed  
+a. len(comparisons) / sum(i for i in range(1,len(subjects)))~~  
 1. Write scraper for hatz.squarespace.com  
 1. Insert scraper data
 
@@ -28,9 +28,14 @@ _$ ./app.py_
 _$ flask/bin/python -m pytest test/_  
 
 **Test**  
+_$ mongo thisorthat_  
+_$ db.subjects.find()_  
+
 _$ curl http://localhost:5000/api/subjects | json_pp_
 
 _$ curl http://localhost:5000/api/ranking | json_pp_  
+
+_$ curl http://localhost:5000/api/scrape -X POST_  
 
 _$ curl -H "Content-Type: application/json" -X POST -d '{  
   "subjects": [

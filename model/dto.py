@@ -40,15 +40,20 @@ class RankingDTO(object):
     :type imgLink: str
     :type rank: int
     :type victims: list of ObjectId
+    :type wins: int
+    :type faced: int
     """
 
-    def __init__(self, subject_id=None, img_desc=None, description=None, img_link=None, rank=None, victims=None):
+    def __init__(self, subject_id=None, img_desc=None, description=None, img_link=None, rank=None, victims=None, wins=0,
+                 faced=0):
         self.subjectId = subject_id
         self.imgDesc = img_desc
         self.description = description
         self.imgLink = img_link
         self.rank = rank
         self.victims = victims
+        self.wins = wins
+        self.faced = faced
 
     @staticmethod
     def to_ranking_dto(subject_record, rank):

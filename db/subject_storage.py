@@ -1,9 +1,10 @@
 from bson.objectid import ObjectId
 from flask_pymongo import PyMongo
+from pymongo import ReplaceOne
 
 from model.record import SubjectRecord
-from util import to_dicts
 from model.record import Victim
+import util
 
 
 class SubjectDAO(object):
@@ -18,7 +19,15 @@ class SubjectDAO(object):
         """
         :type subject_records: list of SubjectRecord
         """
-        self.mongo.db.subjects.insert_many(to_dicts(subject_records))
+        # self.mongo.db.subjects.insert_many(to_dicts(subject_records))
+        requests = []
+        for subject_record in subject_records:
+            record_filter = {'_description': subject_record.description}
+            record_replacement = util.to_dict(subject_record)
+            replace_one = ReplaceOne(record_filter, record_replacement, True)
+            requests.append(replace_one)
+        result = self.mongo.db.subjects.bulk_write(requests)
+        return result
 
     def get_subjects(self):
         """
@@ -39,5 +48,5 @@ class SubjectDAO(object):
         :type victims: set of Victim
         """
         self.mongo.db.subjects.find_one_and_update(
-            {'_id': subject_id}, {'$set': {'_victims': list(to_dicts(victims))}}
+            {'_id': subject_id}, {'$set': {'_victims': list(util.to_dicts(victims))}}
         )
