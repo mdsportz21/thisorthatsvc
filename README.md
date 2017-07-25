@@ -2,15 +2,27 @@
 1. ~~Display rankings on right-half of the screen!~~  
 a. Extra credit: On mobile, it should show rankings below  
 b. ~~Extra credit: show in table names and small thumbnails~~
-1. Create ranking object with the following attributes:  
+1. ~~Create ranking object with the following attributes:~~  
 a. ~~my subject number rank~~  
 b. ~~list of subjects I beat,~~  
-c. each subject is a link that pulls up the two hats for a comparison or navigate to that hat in the rankings 
-d. win-loss record  
+c. each subject is a link that pulls up the two hats for a comparison or navigate to that hat in the rankings  
+d. ~~win-loss record~~  
 1. ~~Show percentage completed  
 a. len(comparisons) / sum(i for i in range(1,len(subjects)))~~  
-1. Write scraper for hatz.squarespace.com  
-1. Insert scraper data
+1. ~~Write scraper for hatz.squarespace.com~~  
+1. ~~Insert scraper data~~  
+1. Export to csv on demand  
+a. Create util for copying and appending to CSV  
+b. Write subjects to csv using Squarespace product csv template  
+c. Verify that CSV can be uploaded to Squarespace Commerce
+1. Create milb importer  
+a. Deprecate squarespace importer  
+b. Create csv? form for importing new hats (page link, hat url?)  
+c. Bonus: create wikipedia scraper to get (city, state, origin year, etc)  
+1. Create a way to choose which hat to compare to the others  
+a. Maybe change alg to compare one hat a time and be done with it  
+1. Figure out how to get python server to start and stop mongod
+
 
 **Setup**  
 _$ virtualenv flask_  
