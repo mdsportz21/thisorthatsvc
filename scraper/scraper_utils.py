@@ -1,5 +1,7 @@
 #!/usr/bin/python
 
+import urllib2
+
 from bs4 import BeautifulSoup
 from bs4 import NavigableString
 from bs4 import Tag
@@ -54,5 +56,8 @@ def strip(word, remove_newlines=True, remove_commas=False, encode_contents=True)
     return word.strip()
 
 
-def get_soup(html):
-    return BeautifulSoup(html, "lxml")
+def get_soup(url):
+    req = urllib2.Request(url, headers={
+        'User-Agent': 'Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/51.0.2704.103 Safari/537.36'})
+    page = urllib2.urlopen(req).read()
+    return BeautifulSoup(page, "lxml")

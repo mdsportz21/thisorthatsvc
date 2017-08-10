@@ -12,11 +12,13 @@ class Victim(BaseRecord):
     """
     :type victim_id: ObjectId
     :type battle_date: arrow.Arrow
+    :type explicit: bool
     """
 
-    def __init__(self, victim_id=None, battle_date=None):
+    def __init__(self, victim_id=None, battle_date=None, explicit=None):
         self._victim_id = victim_id
         self._battle_date = battle_date
+        self._explicit = explicit
 
     def __eq__(self, other):
         return self.victim_id == other.victim_id
@@ -43,9 +45,18 @@ class Victim(BaseRecord):
     def battle_date(self, value):
         self._battle_date = value
 
+    @property
+    def explicit(self):
+        return self._explicit
+
+    @explicit.setter
+    def explicit(self, value):
+        self._explicit = value
+
     @staticmethod
-    def create_victim(victim_id):
-        return Victim(victim_id, arrow.Arrow.utcnow())
+    def create_victim(victim_id, is_explicit=True):
+        # type: (ObjectId, bool) -> Victim
+        return Victim(victim_id, arrow.Arrow.utcnow(), is_explicit)
 
     @staticmethod
     def victim_factory(victim_dict):
@@ -135,3 +146,13 @@ class SubjectRecord(BaseRecord):
     @victims.setter
     def victims(self, value):
         self._victims = value
+
+    def has_victim(self, subject_id):
+        # type: (ObjectId) -> bool
+        for victim in self.victims:
+            if victim.victim_id == subject_id:
+                return True
+        return False
+
+    def as_victim(self):
+        return Victim.create_victim(self.id)

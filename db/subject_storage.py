@@ -42,11 +42,8 @@ class SubjectDAO(object):
         """
         return self.mongo.db.subjects.find_one({'_id': subject_id})
 
-    def update_victims(self, subject_id, victims):
-        """
-        :type subject_id: ObjectId
-        :type victims: set of Victim
-        """
+    def update_victims(self, subject_record):
+        # type: (SubjectRecord) -> None
         self.mongo.db.subjects.find_one_and_update(
-            {'_id': subject_id}, {'$set': {'_victims': list(util.to_dicts(victims))}}
+            {'_id': subject_record.id}, {'$set': {'_victims': list(util.to_dicts(subject_record.victims))}}
         )

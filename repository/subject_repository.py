@@ -44,17 +44,34 @@ class SubjectRepository(object):
         """
         winner_ids = [subject_dto.subjectId for subject_dto in subject_dtos if subject_dto.selected]
         loser_ids = [subject_dto.subjectId for subject_dto in subject_dtos if not subject_dto.selected]
+        subjects_to_update = set()
+
         for winner_id in winner_ids:
             winner_subject = self.get_subject_record(winner_id)
-            winner_victims = winner_subject.victims
+            subjects_to_update.add(winner_subject)
+
             for loser_id in loser_ids:
-                winner_victims.add(Victim.create_victim(loser_id))
-            self.subject_dao.update_victims(winner_id, winner_victims)
-        for loser_id in loser_ids:
-            loser_subject = self.get_subject_record(loser_id)
-            loser_victims = loser_subject.victims
-            for winner_id in winner_ids:
-                old_victim = Victim.create_victim(winner_id)
-                if old_victim in loser_victims:
-                    loser_victims.remove(old_victim)
-            self.subject_dao.update_victims(loser_id, loser_victims)
+                winner_subject.victims.add(Victim.create_victim(loser_id, True))
+
+                loser_subject = self.get_subject_record(loser_id)
+                if winner_subject.as_victim() in loser_subject.victims:
+                    loser_subject.victims.remove(winner_subject.as_victim())
+                    subjects_to_update.add(loser_subject)
+
+                for losers_victim in loser_subject.victims:
+                    victim_subject = self.get_subject_record(losers_victim.victim_id)
+                    if winner_subject.as_victim() in victim_subject.victims:
+                        winner_victim = None
+                        for v in victim_subject.victims:
+                            if v == winner_subject.as_victim():
+                                winner_victim = v
+                                break
+                        if not winner_victim.explicit:
+                            winner_subject.victims.add(Victim.create_victim(losers_victim.victim_id, False))
+                            victim_subject.victims.remove(winner_subject.as_victim())
+                            subjects_to_update.add(victim_subject)
+                    else:
+                        winner_subject.victims.add(Victim.create_victim(losers_victim.victim_id, False))
+
+        for subject_to_update in subjects_to_update:
+            self.subject_dao.update_victims(subject_to_update)
