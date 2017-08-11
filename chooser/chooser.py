@@ -2,20 +2,24 @@ from random import sample
 
 from model.record import SubjectRecord
 from subject_record_dict import SubjectRecordDict
+from ranker.ranker import Ranker
 
 
 class Chooser(object):
     """
     :type subject_record_dict: SubjectRecordDict
+    :type ranker: Ranker
     """
 
-    def __init__(self, subject_record_dict):
+    def __init__(self, subject_record_dict, ranker):
         self.subject_record_dict = subject_record_dict
+        self.ranker = ranker
 
     def choose(self):
         """
-        Choose the subject with the least comparisons.
-        Compare it to a subject it has not yet been compared to, at random.
+        Choose the subject with the most comparisons.
+        Get the subjects it has not been compared to yet, in order of ranking
+        Choose the middle ranked subject
 
         Note: We are only supporting choosing 2 subjects at present.
 
@@ -25,19 +29,21 @@ class Chooser(object):
             return self.choose_any_two(self.subject_record_dict.get_subject_records())
 
         subject_record_ids_by_compared_count = self.subject_record_dict.get_subject_record_ids_by_compared_count()
-        sorted_subject_ids_by_count = sorted(subject_record_ids_by_compared_count.items())
-        subject_record_id_with_lowest_count = sorted_subject_ids_by_count[0][1][0]
-        not_compared_ids = self.subject_record_dict.get_not_compared_ids(subject_record_id_with_lowest_count)
-        subject_record_with_lowest_count = self.subject_record_dict.get_record(subject_record_id_with_lowest_count)
+        counts = sorted(subject_record_ids_by_compared_count.keys(), reverse=True)
+        has_all_compared = counts[0] == len(self.subject_record_dict.subject_records) - 1
+        if len(counts) == 1 or not has_all_compared:
+            target_count = counts[0]
+        else:
+            target_count = counts[1]
+        subject_one_id = subject_record_ids_by_compared_count[target_count][0]
+        subject_record_one = self.subject_record_dict.get_record(subject_one_id)
 
-        # lowest comparison count uncompared
-        for count, subject_ids in sorted_subject_ids_by_count:
-            for subject_id in subject_ids:
-                if subject_record_id_with_lowest_count == subject_id:
-                    continue
-                if subject_id in not_compared_ids:
-                    uncompared_subject_record = self.subject_record_dict.get_record(subject_id)
-                    return [subject_record_with_lowest_count, uncompared_subject_record]
+        not_compared_ids = self.subject_record_dict.get_not_compared_ids(subject_one_id)
+        sorted_not_compared_ids = self.ranker.sort_ids_by_ranking(not_compared_ids)
+        subject_two_id = sorted_not_compared_ids[len(sorted_not_compared_ids)/2]
+        subject_record_two = self.subject_record_dict.get_record(subject_two_id)
+
+        return [subject_record_one, subject_record_two]
 
     @staticmethod
     def choose_any_two(subject_records):

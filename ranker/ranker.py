@@ -89,6 +89,14 @@ class Ranker(object):
             result.setdefault(num_relative_victories, []).append(subject_record)
         return result
 
+    def sort_ids_by_ranking(self, subject_ids):
+        ranked_ids = []
+        ranked_subject_records = self.get_rankings()
+        for subject_record in ranked_subject_records:
+            if subject_record.id in subject_ids:
+                ranked_ids.append(subject_record.id)
+        return ranked_ids
+
     def get_subject_records_by_winning_percentage(self, subject_records):
         result = {}
         subject_record_ids = [subject_record.id for subject_record in subject_records]

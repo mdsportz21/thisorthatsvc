@@ -34,7 +34,8 @@ def get_ranking():
 @app.route('/api/subjects', methods=['GET'])
 def get_subjects():
     subject_record_dict = SubjectRecordDict(subject_repository)
-    chooser = Chooser(subject_record_dict)
+    ranker = Ranker(subject_record_dict)
+    chooser = Chooser(subject_record_dict, ranker)
     subject_records = chooser.choose()
     subject_dtos = codec.from_subject_records(subject_records)
     percentage_completed = chooser.get_percentage_completed()
