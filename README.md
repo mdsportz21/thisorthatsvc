@@ -1,6 +1,4 @@
 **TODO**  
-1. Show the ranking stats of the two hats up for comparison below the hats and
-above the rankings  
 1. Limit victims displayed  
 a. Show only the first 4 victims  
 b. View all victims by clicking expandable cell
@@ -9,12 +7,12 @@ a. Open text editor on click cell
 b. Save on click out  
 c. Make img_desc the title and description the wikipedia entry  
 d. Add both img_desc and description to rankings table  
-1. Figure out a way to compare two hats on demand  
-1. Create wikipedia scraper to get (city, state, origin year, etc)  
+1. Figure out a way to compare two hats on demand   
 1. Export to csv on demand in ranked order 
 a. Create util for copying and appending to CSV  
 b. Write subjects to csv using Squarespace product csv template  
 c. Verify that CSV can be uploaded to Squarespace Commerce
+1. Create class level normalizer (i.e. A, Class-A and Class A => Class A)
   
 **Setup**  
 _$ virtualenv flask_  
