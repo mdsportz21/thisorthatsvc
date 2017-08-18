@@ -3,14 +3,13 @@ from bson.json_util import dumps
 from flask import Flask, jsonify, make_response, abort, request
 from flask_cors import CORS
 
+import importer
 from chooser.chooser import Chooser
 from model import codec
 from model.dto import RankingDTO
 from model.dto import SubjectDTO
-
 from ranker.ranker import Ranker
 from repository.subject_repository import SubjectRepository
-from scraper import scraper
 from subject_record_dict import SubjectRecordDict
 from util import to_dict
 
@@ -69,9 +68,9 @@ def save_subject_selection():
     return dumps({'responseSaved': True}), 200
 
 
-@app.route('/api/scrape', methods=['POST'])
-def scrape_for_new_subjects():
-    subject_dtos = scraper.get_subject_dtos()
+@app.route('/api/import', methods=['POST'])
+def import_subjects():
+    subject_dtos = importer.get_subject_dtos_from_csv('resources/hatz_import_data_final.csv')
     subject_repository.store_subject_dtos(subject_dtos)
 
     return dumps({'scrapeSuccessful': True}), 200

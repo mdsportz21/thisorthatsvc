@@ -7,15 +7,23 @@ from model.record import SubjectRecord
 class SubjectDTO(object):
     """
     :type subjectId: ObjectId
-    :type imgDesc: str
+    :type name: str
     :type description: str
     :type imgLink: str
     :type selected: bool
+    :type address: dict[str, str]
+    :type affiliate: str
+    :type level: str
     """
 
-    def __init__(self, subjectId=None, imgDesc=None, description=None, imgLink=None, selected=None):
+    def __init__(self, subjectId=None, name=None, description=None, imgLink=None, selected=None, tags=None,
+                 address=None, affiliate=None, level=None):
+        self.level = level
+        self.affiliate = affiliate
+        self.address = address
+        self.tags = tags
         self.subjectId = subjectId
-        self.imgDesc = imgDesc
+        self.name = name
         self.description = description
         self.imgLink = imgLink
         self.selected = selected
@@ -35,7 +43,7 @@ class SubjectDTO(object):
 class RankingDTO(object):
     """
     :type subjectId: ObjectId
-    :type imgDesc: str
+    :type name: str
     :type description: str
     :type imgLink: str
     :type rank: int
@@ -44,10 +52,10 @@ class RankingDTO(object):
     :type faced: int
     """
 
-    def __init__(self, subject_id=None, img_desc=None, description=None, img_link=None, rank=None, victims=None, wins=0,
+    def __init__(self, subject_id=None, name=None, description=None, img_link=None, rank=None, victims=None, wins=0,
                  faced=0):
         self.subjectId = subject_id
-        self.imgDesc = img_desc
+        self.name = name
         self.description = description
         self.imgLink = img_link
         self.rank = rank
@@ -63,7 +71,7 @@ class RankingDTO(object):
         :rtype: RankingDTO
         """
         victims = [str(victim.victim_id) for victim in subject_record.victims]
-        ranking_dto = RankingDTO(subject_id=str(subject_record.id), img_desc=subject_record.img_desc,
+        ranking_dto = RankingDTO(subject_id=str(subject_record.id), name=subject_record.name,
                                  description=subject_record.description,
                                  img_link=subject_record.img_link, rank=rank,
                                  victims=victims)

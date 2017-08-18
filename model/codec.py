@@ -8,9 +8,12 @@ def to_subject_record(subject_dto):
     :type subject_dto: SubjectDTO
     :rtype: SubjectRecord
     """
-    subject_record = SubjectRecord(img_desc=subject_dto.imgDesc,
+    subject_record = SubjectRecord(name=subject_dto.name,
                                    description=subject_dto.description,
-                                   img_link=subject_dto.imgLink)
+                                   img_link=subject_dto.imgLink,
+                                   level=subject_dto.level,
+                                   affiliate=subject_dto.affiliate,
+                                   address=subject_dto.address)
     subject_record.id = ObjectId(subject_dto.subjectId) if subject_dto.subjectId is not None else None
     return subject_record
 
@@ -28,7 +31,7 @@ def from_subject_record(subject_record):
     :type subject_record: SubjectRecord
     :rtype: SubjectDTO
     """
-    subject_dto = SubjectDTO(imgDesc=subject_record.img_desc,
+    subject_dto = SubjectDTO(name=subject_record.name,
                              description=subject_record.description,
                              imgLink=subject_record.img_link)
     subject_dto.subjectId = str(subject_record.id) if subject_record.id is not None else None

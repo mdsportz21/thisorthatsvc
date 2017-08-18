@@ -74,15 +74,22 @@ class Victim(BaseRecord):
 class SubjectRecord(BaseRecord):
     """
     :type _id: ObjectId
-    :type img_desc: str
+    :type name: str
     :type description: str
     :type img_link: str
     :type victims: set of Victim
+    :type address: dict[str, str]
+    :type affiliate: str
+    :type level: str
     """
 
-    def __init__(self, _id=None, img_desc=None, description=None, img_link=None, victims=None):
+    def __init__(self, _id=None, name=None, description=None, img_link=None, victims=None, address=None, affiliate=None,
+                 level=None):
+        self._level = level
+        self._affiliate = affiliate
+        self._address = address
         self._id = _id
-        self._img_desc = img_desc
+        self._name = name
         self._description = description
         self._img_link = img_link
         self._victims = victims if victims is not None else set()
@@ -116,12 +123,12 @@ class SubjectRecord(BaseRecord):
         self._id = value
 
     @property
-    def img_desc(self):
-        return self._img_desc
+    def name(self):
+        return self._name
 
-    @img_desc.setter
-    def img_desc(self, value):
-        self._img_desc = value
+    @name.setter
+    def name(self, value):
+        self._name = value
 
     @property
     def description(self):
@@ -146,6 +153,30 @@ class SubjectRecord(BaseRecord):
     @victims.setter
     def victims(self, value):
         self._victims = value
+
+    @property
+    def address(self):
+        return self._address
+
+    @address.setter
+    def address(self, value):
+        self._address = value
+
+    @property
+    def level(self):
+        return self._level
+
+    @level.setter
+    def level(self, value):
+        self._level = value
+
+    @property
+    def affiliate(self):
+        return self._affiliate
+
+    @affiliate.setter
+    def affiliate(self, value):
+        self._affiliate = value
 
     def has_victim(self, subject_id):
         # type: (ObjectId) -> bool

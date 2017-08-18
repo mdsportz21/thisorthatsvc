@@ -1,14 +1,17 @@
 **TODO**  
+1. Send name, not description, to UI
+1. Figure out a way to compare two hats on demand   
+a. Make each victim a link  
+b. On click, load subject and victim   
+
 1. Limit victims displayed  
 a. Show only the first 4 victims  
 b. View all victims by clicking expandable cell
+c. differentiate explicit victims
 1. Make subject metadata in rankings table editable  
 a. Open text editor on click cell  
-b. Save on click out  
-c. Make img_desc the title and description the wikipedia entry  
-d. Add both img_desc and description to rankings table  
-1. Figure out a way to compare two hats on demand   
-1. Export to csv on demand in ranked order 
+b. Save on click out   
+1. Export to csv on demand in ranked order  
 a. Create util for copying and appending to CSV  
 b. Write subjects to csv using Squarespace product csv template  
 c. Verify that CSV can be uploaded to Squarespace Commerce
@@ -35,7 +38,8 @@ _$ db.subjects.find()_
 
 _$ curl http://localhost:5000/api/subjects | json_pp_
 _$ curl http://localhost:5000/api/ranking | json_pp_  
-_$ curl http://localhost:5000/api/scrape -X POST_  
+_$ curl http://localhost:5000/api/scrape -X POST_   
+_$ curl http://localhost:5000/api/import -X POST_  
 _$ curl -H "Content-Type: application/json" -X POST -d '{  
   "subjects": [
     {

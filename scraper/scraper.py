@@ -11,26 +11,26 @@ import scraper_utils
 from model.dto import SubjectDTO
 
 
-def get_subject_dtos():
-    # type: () -> list[SubjectDTO]
-    """
-
-    create records from hatz.squarespace.com
-
-    :return: subject records
-    """
-    results = []
-    url = 'https://hatz.squarespace.com/milb-dope'
-    soup = scraper_utils.get_soup(url)
-    img_tags = soup.find_all('img', class_='loading')
-    img_links = [img_tag['data-src'] for img_tag in img_tags]
-    desc_tags = soup.find_all('div', class_='project-title')
-    descriptions = [scraper_utils.get_soup_contents_by_tag(desc_tag) for desc_tag in desc_tags]
-    assert len(img_links) == len(descriptions)
-    for img_link, description in zip(img_links, descriptions):
-        subject_dto = SubjectDTO(imgDesc=description, description=description, imgLink=img_link)
-        results.append(subject_dto)
-    return results
+# def get_subject_dtos():
+#     # type: () -> list[SubjectDTO]
+#     """
+#
+#     create records from hatz.squarespace.com
+#
+#     :return: subject records
+#     """
+#     results = []
+#     url = 'https://hatz.squarespace.com/milb-dope'
+#     soup = scraper_utils.get_soup(url)
+#     img_tags = soup.find_all('img', class_='loading')
+#     img_links = [img_tag['data-src'] for img_tag in img_tags]
+#     desc_tags = soup.find_all('div', class_='project-title')
+#     descriptions = [scraper_utils.get_soup_contents_by_tag(desc_tag) for desc_tag in desc_tags]
+#     assert len(img_links) == len(descriptions)
+#     for img_link, description in zip(img_links, descriptions):
+#         subject_dto = SubjectDTO(name=description, description=description, imgLink=img_link)
+#         results.append(subject_dto)
+#     return results
 
 
 def get_teams_from_lids():
