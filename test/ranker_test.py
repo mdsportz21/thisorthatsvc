@@ -3,7 +3,7 @@ from mock import patch
 
 from model.record import SubjectRecord
 from model.record import Victim
-from ranker.ranker import Ranker
+from ranker import Ranker
 from subject_record_dict import SubjectRecordDict
 
 subject_ids = {

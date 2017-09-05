@@ -2,7 +2,6 @@ from bson import ObjectId
 
 from model.record import SubjectRecord
 from model.record import Victim
-from repository.subject_repository import SubjectRepository
 
 
 class SubjectRecordDict(object):
@@ -95,7 +94,18 @@ class SubjectRecordDict(object):
             result.setdefault(compared_count, []).append(subject_record_id)
         return result
 
-    def is_all_compared(self):
+    def get_subject_record_ids_by_victim_count(self):
+        # type: () -> dict[int,list[ObjectId]]
+        result = {}
+        for subject_record in self.get_subject_records():
+            victim_count = len(subject_record.victims)
+            result.setdefault(victim_count, []).append(subject_record.id)
+        return result
+
+    def is_all_compared(self, subject_id):
+        return self.get_compared_count(subject_id) == len(self.subject_records)
+
+    def are_all_subjects_compared(self):
         """
         :rtype: bool
         """

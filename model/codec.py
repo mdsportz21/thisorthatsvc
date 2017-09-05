@@ -1,6 +1,29 @@
-from model.dto import SubjectDTO
-from model.record import SubjectRecord
 from bson import ObjectId
+
+from model.dto import SubjectDTO
+from model.record import SubjectRecord, Subject
+
+
+def to_subject(subject_dto):
+    """
+    :type subject_dto: SubjectDTO
+    :rtype: Subject
+    """
+    subject = Subject(name=subject_dto.name,
+                      description=subject_dto.description,
+                      img_link=subject_dto.imgLink,
+                      level=subject_dto.level,
+                      affiliate=subject_dto.affiliate,
+                      address=subject_dto.address)
+    return subject
+
+
+def to_subjects(subject_dtos):
+    """
+    :param subject_dtos: list of SubjectDTO
+    :return: list of Subject
+    """
+    return [to_subject(dto) for dto in subject_dtos]
 
 
 def to_subject_record(subject_dto):
@@ -32,9 +55,8 @@ def from_subject_record(subject_record):
     :rtype: SubjectDTO
     """
     subject_dto = SubjectDTO(name=subject_record.name,
-                             description=subject_record.description,
-                             imgLink=subject_record.img_link)
-    subject_dto.subjectId = str(subject_record.id) if subject_record.id is not None else None
+                             imgLink=subject_record.img_link,
+                             subjectId=str(subject_record.id) if subject_record.id is not None else None)
     return subject_dto
 
 

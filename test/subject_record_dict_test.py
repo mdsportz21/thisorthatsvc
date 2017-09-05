@@ -29,7 +29,7 @@ def test_is_all_compared_all_compared(mock_subject_repository):
     ]
     subject_record_dict = create_subject_record_dict(mock_subject_repository, test_data)
 
-    is_all_compared = subject_record_dict.is_all_compared()
+    is_all_compared = subject_record_dict.are_all_subjects_compared()
 
     assert is_all_compared
 
@@ -43,7 +43,7 @@ def test_is_all_compared_all_not_compared(mock_subject_repository):
     ]
     subject_record_dict = create_subject_record_dict(mock_subject_repository, test_data)
 
-    is_all_compared = subject_record_dict.is_all_compared()
+    is_all_compared = subject_record_dict.are_all_subjects_compared()
 
     assert not is_all_compared
 

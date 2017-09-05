@@ -1,11 +1,18 @@
 from bson import ObjectId
-from flask_pymongo import PyMongo
 
-from db.subject_storage import SubjectDAO
+from db.storage import SubjectDAO, BracketDAO
 from model import codec
 from model.dto import SubjectDTO
 from model.record import SubjectRecord
 from model.record import Victim
+
+
+class BracketRepository(object):
+    def __init__(self, pymongo):
+        self.bracket_dao = BracketDAO(pymongo)
+
+    def store_bracket(self, bracket):
+        self.bracket_dao.store_bracket(bracket)
 
 
 class SubjectRepository(object):
@@ -13,14 +20,14 @@ class SubjectRepository(object):
     :type subject_dao: SubjectDAO
     """
 
-    def __init__(self, app):
-        self.subject_dao = SubjectDAO(PyMongo(app))
+    def __init__(self, pymongo):
+        self.subject_dao = SubjectDAO(pymongo)
 
     def get_subject_records(self):
         """
         :rtype: list of SubjectDTO
         """
-        return [SubjectRecord.subject_record_factory(subject_dict) for subject_dict in self.subject_dao.get_subjects()]
+        return [SubjectRecord.factory(subject_dict) for subject_dict in self.subject_dao.get_subjects()]
 
     def get_subject_record(self, subject_id):
         """
@@ -28,7 +35,7 @@ class SubjectRepository(object):
         :rtype: SubjectRecord
         """
         subject_record_dict = self.subject_dao.get_subject(subject_id)
-        subject_record = SubjectRecord.subject_record_factory(subject_record_dict)
+        subject_record = SubjectRecord.factory(subject_record_dict)
         return subject_record
 
     def store_subject_dtos(self, subject_dtos):

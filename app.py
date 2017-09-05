@@ -2,21 +2,25 @@
 from bson.json_util import dumps
 from flask import Flask, jsonify, make_response, abort, request
 from flask_cors import CORS
+from flask_pymongo import PyMongo
 
 import importer
+from bracket import BracketFactory
 from chooser.chooser import Chooser
 from model import codec
 from model.dto import RankingDTO
 from model.dto import SubjectDTO
-from ranker.ranker import Ranker
-from repository.subject_repository import SubjectRepository
+from ranker import Ranker
+from repository import SubjectRepository, BracketRepository
 from subject_record_dict import SubjectRecordDict
 from util import to_dict
 
 app = Flask('thisorthat')
 with app.app_context():
     CORS(app, resources={r"/api/*": {"origins": "http://localhost:3000"}})
-    subject_repository = SubjectRepository(app)
+    pymongo = PyMongo(app)
+    subject_repository = SubjectRepository(pymongo)
+    bracket_repository = BracketRepository(pymongo)
 
 
 @app.route('/api/ranking', methods=['GET'])
@@ -71,8 +75,13 @@ def save_subject_selection():
 @app.route('/api/import', methods=['POST'])
 def import_subjects():
     subject_dtos = importer.get_subject_dtos_from_csv('resources/hatz_import_data_final.csv')
-    subject_repository.store_subject_dtos(subject_dtos)
 
+    # Old: store in subjects collection
+    # subject_repository.store_subject_dtos(subject_dtos)
+    # New: store in bracket
+
+    bracket = BracketFactory.generate_bracket_from_dtos(subject_dtos, 'MiLB Hats')
+    bracket_repository.store_bracket(bracket)
     return dumps({'scrapeSuccessful': True}), 200
 
 

@@ -1,5 +1,6 @@
 **TODO**  
-1. Send name, not description, to UI
+1. REEEEEEEMIX: Create a bracket
+
 1. Figure out a way to compare two hats on demand   
 a. Make each victim a link  
 b. On click, load subject and victim   

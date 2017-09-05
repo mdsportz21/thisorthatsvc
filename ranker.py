@@ -1,9 +1,9 @@
+from bson import ObjectId
+
 import util
 from model.dto import RankingDTO
 from model.record import SubjectRecord
 from subject_record_dict import SubjectRecordDict
-from bson import ObjectId
-from model.record import Victim
 
 
 class Ranker(object):

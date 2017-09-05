@@ -3,7 +3,7 @@ from mock import patch
 
 from model.dto import SubjectDTO
 from model.record import SubjectRecord
-from repository.subject_repository import SubjectRepository
+from repository import SubjectRepository
 
 subject_ids = {
     'a': ObjectId(24 * 'a'),
@@ -52,7 +52,7 @@ def test_save_choice_new_subject(mock_subject_dao, mock_pymongo):
     subject_repository = SubjectRepository(None)
     subject_repository.subject_dao = mock_subject_dao
 
-    expected_subject = SubjectRecord.subject_record_factory({
+    expected_subject = SubjectRecord.factory({
         '_id': subject_ids['e'],
         '_victims': [{
             '_victim_id': subject_ids['a'],
@@ -85,7 +85,7 @@ def test_save_choice_subject_with_contradictions(mock_subject_dao, mock_pymongo)
     subject_repository = SubjectRepository(None)
     subject_repository.subject_dao = mock_subject_dao
 
-    expected_subject = SubjectRecord.subject_record_factory({
+    expected_subject = SubjectRecord.factory({
         '_id': subject_ids['c'],
         '_victims': [{
             '_victim_id': subject_ids['a'],

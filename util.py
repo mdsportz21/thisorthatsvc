@@ -1,21 +1,23 @@
+import collections
 from decimal import Decimal
-import arrow
 
 
 def to_dict(obj):
     """
-    :type obj: object
-    :rtype: dict
+    Recursively convert a Python object graph to sequences (lists)
+    and mappings (dicts) of primitives (bool, int, float, string, ...)
     """
-    copy_dict = dict(obj.__dict__)
-    for k, v in list(copy_dict.items()):
-        if v is None:
-            del copy_dict[k]
-        elif isinstance(v, arrow.Arrow):
-            copy_dict[k] = v.for_json()
-        elif isinstance(v, set):
-            copy_dict[k] = list(to_dicts(v))
-    return copy_dict
+    if isinstance(obj, basestring):
+        return obj
+    elif isinstance(obj, dict):
+        return dict((key, to_dict(val)) for key, val in obj.items())
+    elif isinstance(obj, collections.Iterable):
+        return [to_dict(val) for val in obj]
+    elif hasattr(obj, '__dict__'):
+        return to_dict(vars(obj))
+    elif hasattr(obj, '__slots__'):
+        return to_dict(dict((name, getattr(obj, name)) for name in getattr(obj, '__slots__')))
+    return obj
 
 
 def to_dicts(objs):
