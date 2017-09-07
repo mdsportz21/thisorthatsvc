@@ -20,6 +20,9 @@ class BracketDAO(object):
         bracket_dict = to_dict(bracket)
         self.pymongo.db.brackets.insert_one(bracket_dict)
 
+    def get_bracket(self, name):
+        return self.pymongo.db.brackets.find_one({'_name': name})
+
 
 class SubjectDAO(object):
     """

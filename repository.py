@@ -3,8 +3,7 @@ from bson import ObjectId
 from db.storage import SubjectDAO, BracketDAO
 from model import codec
 from model.dto import SubjectDTO
-from model.record import SubjectRecord
-from model.record import Victim
+from model.record import SubjectRecord, Victim, Bracket
 
 
 class BracketRepository(object):
@@ -14,6 +13,9 @@ class BracketRepository(object):
     def store_bracket(self, bracket):
         self.bracket_dao.store_bracket(bracket)
 
+    def get_bracket(self, name):
+        bracket_dict = self.bracket_dao.get_bracket(name)
+        return Bracket.factory(bracket_dict)
 
 class SubjectRepository(object):
     """

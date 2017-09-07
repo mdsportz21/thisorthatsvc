@@ -8,6 +8,10 @@ class BaseRecord(object):
         self.__dict__.update(kwargs)
 
 
+class SlotConversionException(Exception):
+    pass
+
+
 class Bracket(BaseRecord):
     """
     :type rounds: list of Round
@@ -188,7 +192,7 @@ class Matchup(BaseRecord):
         matchup.slot_one = Slot.factory(matchup.slot_one)
         matchup.slot_two = Slot.factory(matchup.slot_two)
         if matchup.winner is not None:
-            matchup.winner = Subject.factory(matchup.winner)
+            matchup.winner = Team.factory(matchup.winner)
         return matchup
 
 
@@ -232,13 +236,9 @@ class Slot(BaseRecord):
         raise SlotConversionException('Unable to convert slot: ' + str(slot_dict))
 
 
-class SlotConversionException(Exception):
-    pass
-
-
 class TeamSlot(Slot):
     """
-    :type team: Subject
+    :type team: Team
     """
 
     def __init__(self, team, seed=None):
@@ -270,7 +270,7 @@ class TeamSlot(Slot):
         """
         team_slot = TeamSlot(None)
         team_slot.update(**slot_dict)
-        team_slot.team = Subject.factory(team_slot.team)
+        team_slot.team = Team.factory(team_slot.team)
         return team_slot
 
 
@@ -535,7 +535,7 @@ class SubjectRecord(BaseRecord):
         return subject
 
 
-class Subject(BaseRecord):
+class Team(BaseRecord):
     """
     :type name: str
     :type description: str
@@ -611,8 +611,8 @@ class Subject(BaseRecord):
     def factory(subject_dict):
         """
         :type subject_dict: dict
-        :rtype: Subject
+        :rtype: Team
         """
-        subject = Subject()
+        subject = Team()
         subject.update(**subject_dict)
         return subject

@@ -3,13 +3,13 @@ from random import sample
 
 from model import codec
 from model.dto import SubjectDTO
-from model.record import Bracket, Round, TeamSlot, Subject, Matchup, MatchupSlot
+from model.record import Bracket, Round, TeamSlot, Team, Matchup, MatchupSlot
 
 
 class BracketFactory(object):
     @staticmethod
     def generate_bracket(subjects, name):
-        # type: (list[Subject]) -> Bracket
+        # type: (list[Team]) -> Bracket
         if len(subjects) < 2:
             raise NotEnoughTeamsException(
                 'At least 2 teams required to generate a bracket. Found {0} teams.'.format(len(subjects)))
@@ -29,7 +29,7 @@ class BracketFactory(object):
 
     @staticmethod
     def create_first_round(subjects):
-        # type: (list[Subject]) -> Round
+        # type: (list[Team]) -> Round
         round_one = Round([])
         randomized_subjects = sample(subjects, len(subjects))
         total_num_teams = len(subjects)
@@ -85,7 +85,7 @@ class BracketFactory(object):
 
     @staticmethod
     def get_num_rounds(subjects):
-        # type: (list[Subject]) -> int
+        # type: (list[Team]) -> int
         num_teams = len(subjects)
         # Play in games don't count as a round, so don't do ceiling
         # return int(ceil(log(num_teams, 2)))

@@ -14,6 +14,7 @@ from ranker import Ranker
 from repository import SubjectRepository, BracketRepository
 from subject_record_dict import SubjectRecordDict
 from util import to_dict
+from collections import Iterable
 
 app = Flask('thisorthat')
 with app.app_context():
@@ -40,13 +41,22 @@ def get_subjects():
     ranker = Ranker(subject_record_dict)
     chooser = Chooser(subject_record_dict, ranker)
     subject_records = chooser.choose()
-    subject_dtos = codec.from_subject_records(subject_records)
+    subject_dtos = codec.to_subject_dtos(subject_records)
     percentage_completed = chooser.get_percentage_completed()
     return to_json(subject_dtos, 'subjects', {'percentCompleted': percentage_completed})
 
 
+@app.route('/api/bracket/<name>', methods=['GET'])
+def get_bracket(name):
+    # type: (str) -> str
+    bracket = bracket_repository.get_bracket(name)
+    bracket_dto = codec.to_bracket_dto(bracket)
+    return to_json(bracket_dto, 'bracket')
+
+
 def to_json(items, name='subjects', other_dict=None):
-    json_items = [to_dict(item) for item in items]
+    # type: (object, str, dict) -> str
+    json_items = [to_dict(item) for item in items] if isinstance(items, Iterable) else to_dict(items)
     results = {name: json_items}
     if other_dict is not None:
         results.update(other_dict)
