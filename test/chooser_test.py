@@ -17,7 +17,7 @@ subject_ids = {
 
 
 def create_chooser(mock_subject_repository, get_subject_records_return_value):
-    mock_subject_repository.get_subject_records.return_value = get_subject_records_return_value
+    mock_subject_repository.get_team_records.return_value = get_subject_records_return_value
     subject_record_dict = SubjectRecordDict(mock_subject_repository)
     chooser = Chooser(subject_record_dict)
     return chooser

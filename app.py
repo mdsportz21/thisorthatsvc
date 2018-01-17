@@ -1,57 +1,75 @@
 #!flask/bin/python
+from collections import Iterable
+
+from bson import ObjectId
 from bson.json_util import dumps
-from flask import Flask, jsonify, make_response, abort, request
+from flask import Flask, jsonify, make_response, request, abort
 from flask_cors import CORS
 from flask_pymongo import PyMongo
 
 import importer
 from bracket import BracketFactory
-from chooser.chooser import Chooser
+from db.storage import TeamDAO, SlotDAO, BracketDAO
 from model import codec
-from model.dto import RankingDTO
-from model.dto import SubjectDTO
-from ranker import Ranker
-from repository import SubjectRepository, BracketRepository
-from subject_record_dict import SubjectRecordDict
+from model.dto import BracketWrapperDTO
+from model.record import TeamRecord, BracketRecord, SlotRecord
+from repository import TeamRepository, BracketRepository, SlotRepository
 from util import to_dict
-from collections import Iterable
 
 app = Flask('thisorthat')
 with app.app_context():
     CORS(app, resources={r"/api/*": {"origins": "http://localhost:3000"}})
     pymongo = PyMongo(app)
-    subject_repository = SubjectRepository(pymongo)
+    team_repository = TeamRepository(pymongo)
     bracket_repository = BracketRepository(pymongo)
-
-
-@app.route('/api/ranking', methods=['GET'])
-def get_ranking():
-    subject_record_dict = SubjectRecordDict(subject_repository)
-    ranker = Ranker(subject_record_dict)
-    ranked_subject_records = ranker.get_rankings()
-    ranking_dtos = [RankingDTO.to_ranking_dto(subject_record, rank + 1) for rank, subject_record in
-                    enumerate(ranked_subject_records)]
-    ranker.fill_wins_and_faced(ranking_dtos)
-    return to_json(ranking_dtos, 'rankings')
-
-
-@app.route('/api/subjects', methods=['GET'])
-def get_subjects():
-    subject_record_dict = SubjectRecordDict(subject_repository)
-    ranker = Ranker(subject_record_dict)
-    chooser = Chooser(subject_record_dict, ranker)
-    subject_records = chooser.choose()
-    subject_dtos = codec.to_subject_dtos(subject_records)
-    percentage_completed = chooser.get_percentage_completed()
-    return to_json(subject_dtos, 'subjects', {'percentCompleted': percentage_completed})
+    slot_repository = SlotRepository(pymongo)
+    team_dao = TeamDAO(pymongo)
+    slot_dao = SlotDAO(pymongo)
+    bracket_dao = BracketDAO(pymongo)
 
 
 @app.route('/api/bracket/<name>', methods=['GET'])
-def get_bracket(name):
+def get_bracket_json_by_name(name):
     # type: (str) -> str
-    bracket = bracket_repository.get_bracket(name)
-    bracket_dto = codec.to_bracket_dto(bracket)
-    return to_json(bracket_dto, 'bracket')
+    team_records = team_repository.get_team_records()
+    bracket_record = bracket_repository.get_bracket(name)
+    slot_records = slot_repository.get_slots(bracket_record.id)
+    return get_bracket_json(team_records, slot_records, bracket_record)
+
+
+@app.route('/api/import', methods=['POST'])
+def import_teams():
+    team_records = importer.get_team_records_from_csv('resources/hatz_import_data_final.csv')
+    team_records = team_dao.store_team_records(team_records)
+    return dumps({'importSuccessful': True}), 200
+
+
+@app.route('/api/bracket', methods=['POST'])
+def generate_bracket():
+    if not request.json or 'name' not in request.json:
+        abort(400, {'message': 'name required in response'})
+
+    name = request.json['name']
+
+    if bracket_repository.has_bracket(name):
+        abort(400, {'message': 'bracket with name {0} already exists'.format(name)})
+
+    team_records = team_repository.get_team_records()
+    bracket_id = ObjectId()
+    slot_records = BracketFactory.generate_slot_records(team_records, bracket_id)
+    slot_records = slot_dao.store_slots(slot_records)
+    bracket_record = BracketFactory.generate_bracket(slot_records, bracket_id, name)
+    bracket_record = bracket_dao.store_bracket(bracket_record)
+
+    return get_bracket_json(team_records, slot_records, bracket_record)
+    # TODO: make sure slot and subject dtos are returned with IDs
+
+
+def get_bracket_json(team_records, slot_records, bracket_record):
+    # type: (list[TeamRecord], list[SlotRecord], BracketRecord) -> str
+    bracket_wrapper_dto = BracketWrapperDTO(bracket=codec.to_bracket_dto(bracket_record),
+                                            teams=codec.to_team_dtos(team_records, slot_records))
+    return to_json(bracket_wrapper_dto, 'bracket')
 
 
 def to_json(items, name='subjects', other_dict=None):
@@ -61,38 +79,6 @@ def to_json(items, name='subjects', other_dict=None):
     if other_dict is not None:
         results.update(other_dict)
     return dumps(results)
-
-
-@app.route('/api/subjects', methods=['POST'])
-def save_subject_selection():
-    # validate and extract
-    if not request.json or 'subjects' not in request.json:
-        abort(400, {'message': 'subjects required in response'})
-    print "###", request.json, "###"
-    subject_dtos = request.json['subjects']
-    if len(subject_dtos) < 2:
-        abort(400, {'message': 'at least two subjects required in response'})
-    for subject in subject_dtos:
-        if 'selected' not in subject:
-            abort(400, {'message': 'selected required in each subject'})
-
-    # save
-    subject_repository.save_choice([SubjectDTO.subject_dto_factory(subject_dto) for subject_dto in subject_dtos])
-
-    return dumps({'responseSaved': True}), 200
-
-
-@app.route('/api/import', methods=['POST'])
-def import_subjects():
-    subject_dtos = importer.get_subject_dtos_from_csv('resources/hatz_import_data_final.csv')
-
-    # Old: store in subjects collection
-    # subject_repository.store_subject_dtos(subject_dtos)
-    # New: store in bracket
-
-    bracket = BracketFactory.generate_bracket_from_dtos(subject_dtos, 'MiLB Hats')
-    bracket_repository.store_bracket(bracket)
-    return dumps({'scrapeSuccessful': True}), 200
 
 
 @app.errorhandler(404)

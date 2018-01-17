@@ -3,7 +3,7 @@ from mock import patch
 
 from model.dto import SubjectDTO
 from model.record import SubjectRecord
-from repository import SubjectRepository
+from repository import TeamRepository
 
 subject_ids = {
     'a': ObjectId(24 * 'a'),
@@ -48,9 +48,9 @@ def mock_get_subject(obj_id):
 @patch('db.subject_storage.SubjectDAO')
 @patch('flask_pymongo.PyMongo')
 def test_save_choice_new_subject(mock_subject_dao, mock_pymongo):
-    mock_subject_dao.get_subject = mock_get_subject
-    subject_repository = SubjectRepository(None)
-    subject_repository.subject_dao = mock_subject_dao
+    mock_subject_dao.get_team_record = mock_get_subject
+    subject_repository = TeamRepository(None)
+    subject_repository.team_dao = mock_subject_dao
 
     expected_subject = SubjectRecord.factory({
         '_id': subject_ids['e'],
@@ -81,9 +81,9 @@ def test_save_choice_new_subject(mock_subject_dao, mock_pymongo):
 @patch('db.subject_storage.SubjectDAO')
 @patch('flask_pymongo.PyMongo')
 def test_save_choice_subject_with_contradictions(mock_subject_dao, mock_pymongo):
-    mock_subject_dao.get_subject = mock_get_subject
-    subject_repository = SubjectRepository(None)
-    subject_repository.subject_dao = mock_subject_dao
+    mock_subject_dao.get_team_record = mock_get_subject
+    subject_repository = TeamRepository(None)
+    subject_repository.team_dao = mock_subject_dao
 
     expected_subject = SubjectRecord.factory({
         '_id': subject_ids['c'],

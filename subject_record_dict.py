@@ -14,7 +14,7 @@ class SubjectRecordDict(object):
         """
         :type subject_repository: SubjectRepository
         """
-        self.subject_records = subject_repository.get_subject_records()
+        self.subject_records = subject_repository.get_team_records()
         self.subject_records_dict = {record.id: record for record in self.subject_records}
 
     def get_record(self, subject_id):

@@ -1,92 +1,29 @@
-import six
-from bson.objectid import ObjectId
-
-from model.record import SubjectRecord
-
-
 class BaseDTO(object):
     def update(self, **kwargs):
         self.__dict__.update(kwargs)
 
 
-class SubjectDTO(BaseDTO):
+class BracketWrapperDTO(BaseDTO):
     """
-    :type subjectId: ObjectId
-    :type name: str
-    :type description: str
-    :type imgLink: str
-    :type selected: bool
-    :type address: dict[str, str]
-    :type affiliate: str
-    :type level: str
+    :type bracket: BracketDTO
+    :type teams: list of TeamDTO
     """
 
-    def __init__(self, subjectId=None, name=None, description=None, imgLink=None, selected=None, tags=None,
-                 address=None, affiliate=None, level=None):
-        # type: (ObjectId, str, str, str, bool, dict[str, str], str, str) -> None
-        self.level = level
-        self.affiliate = affiliate
-        self.address = address
-        self.tags = tags
-        self.subjectId = subjectId
-        self.name = name
-        self.description = description
-        self.imgLink = imgLink
-        self.selected = selected
-
-    @staticmethod
-    def subject_dto_factory(subject_dto_dict):
-        # type: (dict) -> SubjectDTO
-        subject = SubjectDTO()
-        subject.update(**subject_dto_dict)
-        if subject.subjectId is not None and isinstance(subject.subjectId, six.string_types):
-            subject.subjectId = ObjectId(subject.subjectId)
-        return subject
-
-
-class RankingDTO(BaseDTO):
-    """
-    :type subjectId: ObjectId
-    :type name: str
-    :type description: str
-    :type imgLink: str
-    :type rank: int
-    :type victims: list of ObjectId
-    :type wins: int
-    :type faced: int
-    """
-
-    def __init__(self, subject_id=None, name=None, description=None, img_link=None, rank=None, victims=None, wins=0,
-                 faced=0):
-        # type: (ObjectId, str, str, str, int, list[ObjectId], int, int) -> None
-        self.subjectId = subject_id
-        self.name = name
-        self.description = description
-        self.imgLink = img_link
-        self.rank = rank
-        self.victims = victims
-        self.wins = wins
-        self.faced = faced
-
-    @staticmethod
-    def to_ranking_dto(subject_record, rank):
-        # type: (SubjectRecord, int) -> RankingDTO
-        victims = [str(victim.victim_id) for victim in subject_record.victims]
-        ranking_dto = RankingDTO(subject_id=str(subject_record.id), name=subject_record.name,
-                                 description=subject_record.description,
-                                 img_link=subject_record.img_link, rank=rank,
-                                 victims=victims)
-        return ranking_dto
+    def __init__(self, bracket, teams):
+        self.bracket = bracket
+        self.teams = teams
 
 
 class BracketDTO(BaseDTO):
     """
     :type rounds: list of RoundDTO
+    :type name: str
     """
 
-    def __init__(self, rounds):
-        # type: (list[RoundDTO]) -> None
+    def __init__(self, rounds, name):
+        # type: (list[RoundDTO], str) -> None
         self.rounds = rounds
+        self.name = name
 
 
 class RoundDTO(BaseDTO):
@@ -101,76 +38,47 @@ class RoundDTO(BaseDTO):
 
 class MatchupDTO(BaseDTO):
     """
-    :type slotOne: SlotDTO
-    :type slotTwo: SlotDTO
-    :type winner: SlotDTO
+    :type matchupId: str
+    :type slotOneId: str
+    :type slotTwoId: str
+    :type winnerSlotId: str
+    :type region: str
+    :type sourceMatchupOneId: str
+    :type sourceMatchupTwoId: str
     """
 
-    def __init__(self, slotOne, slotTwo, winner):
-        # type: (SlotDTO, SlotDTO, SlotDTO) -> None
-        self.slotOne = slotOne
-        self.slotTwo = slotTwo
-        self.winner = winner
+    def __init__(self, matchupId, slotOneId, slotTwoId, winnerSlotId, region, sourceMatchupOneId, sourceMatchupTwoId):
+        # type: (str, str, str, str, str, str, str) -> None
+        self.matchupId = matchupId
+        self.slotOneId = slotOneId
+        self.slotTwoId = slotTwoId
+        self.winnerSlotId = winnerSlotId
+        self.region = region
+        self.sourceMatchupOneId = sourceMatchupOneId
+        self.sourceMatchupTwoId = sourceMatchupTwoId
 
 
-class SlotDTO(BaseDTO):
-    """
-    :type seed: int
-    """
-
-    def __init__(self, seed):
-        # type: (int) -> None
-        self.seed = seed
-
-
+# TeamDTO = TeamRecord + SlotRecord
 class TeamDTO(BaseDTO):
     """
+    :type slotId: str
     :type name: str
-    :type description: str
-    :type img_link: str
-    :type address: dict[str, str]
-    :type affiliate: str
-    :type level: str
+    :type imgLink: str
+    :type seed: str
     """
 
-    def __init__(self, name, description, img_link, address, affiliate, level):
-        # type: (str, str, str, dict[str, str], str, str) -> None
+    def __init__(self, slotId, name, seed=None, imgLink=None):
+        # type: (str, str, str, str) -> None
         self.name = name
-        self.description = description
-        self.img_link = img_link
-        self.address = address
-        self.affiliate = affiliate
-        self.level = level
+        self.imgLink = imgLink
+        self.slotId = slotId
+        self.seed = seed
 
-
-class TeamSlotDTO(SlotDTO):
-    """
-    :type team: SubjectDTO
-    """
-
-    def __init__(self, team, seed):
-        # type: (TeamDTO, int) -> None
-        super(TeamSlotDTO, self).__init__(seed=seed)
-        self.team = team
-
-
-class RegionSlotDTO(SlotDTO):
-    """
-    :type region: BracketDTO
-    """
-
-    def __init__(self, region, seed):
-        # type: (BracketDTO, int) -> None
-        super(RegionSlotDTO, self).__init__(seed=seed)
-        self.region = region
-
-
-class MatchupSlotDTO(SlotDTO):
-    """
-    :type matchup: MatchupDTO
-    """
-
-    def __init__(self, matchup, seed):
-        # type: (MatchupDTO, int) -> None
-        super(MatchupSlotDTO, self).__init__(seed=seed)
-        self.matchup = matchup
+        # @staticmethod
+        # def team_dto_factory(team_dto_dict):
+        #     # type: (dict) -> TeamDTO
+        #     team = TeamDTO()
+        #     team.update(**team_dto_dict)
+        #     if team.teamId is not None and isinstance(team.teamId, six.string_types):
+        #         team.teamId = ObjectId(team.teamId)
+        #     return team

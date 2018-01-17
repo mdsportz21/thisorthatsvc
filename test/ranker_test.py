@@ -45,7 +45,7 @@ test_rank_subject_records_no_victims_data = [
 
 @patch('repository.subject_repository.SubjectRepository')
 def test_get_rankings(mock_subject_repository):
-    mock_subject_repository.get_subject_records.return_value = test_rank_subject_records_data
+    mock_subject_repository.get_team_records.return_value = test_rank_subject_records_data
     subject_record_dict = SubjectRecordDict(mock_subject_repository)
     ranker = Ranker(subject_record_dict)
     ranked_records = ranker.get_rankings()
@@ -60,7 +60,7 @@ def test_get_rankings(mock_subject_repository):
 
 @patch('repository.subject_repository.SubjectRepository')
 def test_get_rankings_no_victims(mock_subject_repository):
-    mock_subject_repository.get_subject_records.return_value = test_rank_subject_records_no_victims_data
+    mock_subject_repository.get_team_records.return_value = test_rank_subject_records_no_victims_data
     subject_record_dict = SubjectRecordDict(mock_subject_repository)
     ranker = Ranker(subject_record_dict)
     ranked_records = ranker.get_rankings()

@@ -16,7 +16,7 @@ subject_ids = {
 
 
 def create_subject_record_dict(mock_subject_repository, get_subject_records_return_value):
-    mock_subject_repository.get_subject_records.return_value = get_subject_records_return_value
+    mock_subject_repository.get_team_records.return_value = get_subject_records_return_value
     subject_record_dict = SubjectRecordDict(mock_subject_repository)
     return subject_record_dict
 

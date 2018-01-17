@@ -2,3 +2,5 @@ flask/
 .idea/
 *.pyc
 .cache/
+resources/
+.DS_Store

@@ -3,7 +3,7 @@ import unittest
 from bracket import BracketFactory
 from bracket import NotEnoughTeamsException
 from model.dto import SubjectDTO
-from model.record import MatchupSlot, TeamSlot, Bracket
+from model.record import MatchupSlot, TeamSlot, BracketRecord
 from util import to_dict
 
 
@@ -27,27 +27,27 @@ class BracketFactoryTest(unittest.TestCase):
 
         self.assertIsNotNone(bracket)
 
-        rounds = bracket.rounds
+        rounds = bracket.round_records
         self.assertEqual(len(rounds), 2)
 
         round_one = rounds[0]
         matchups = round_one.matchups
         self.assertEqual(len(matchups), 2)
 
-        playin_matchup = round_one.get_matchup_by_seed(5)
+        playin_matchup = round_one.get_matchup_slot_by_seed(5)
         self.assertIsNotNone(playin_matchup)
         sorted_playin_slots = get_sorted_slots(playin_matchup)
         self.assertEqual(sorted_playin_slots[0].seed, 4)
         self.assertEqual(sorted_playin_slots[1].seed, 5)
 
-        one_matchup = round_one.get_matchup_by_seed(1)
+        one_matchup = round_one.get_matchup_slot_by_seed(1)
         playin_matchup_slots = one_matchup.get_slots_by_type(MatchupSlot)
         self.assertEqual(playin_matchup, playin_matchup_slots[0].matchup)
 
         one_team_slots = one_matchup.get_slots_by_type(TeamSlot)
         self.assertEqual(one_team_slots[0].seed, 1)
 
-        two_three_matchup = round_one.get_matchup_by_seed(2)
+        two_three_matchup = round_one.get_matchup_slot_by_seed(2)
         two_three_slots_sorted = get_sorted_slots(two_three_matchup)
         self.assertEqual(two_three_slots_sorted[0].seed, 2)
         self.assertEqual(two_three_slots_sorted[1].seed, 3)
@@ -61,27 +61,27 @@ class BracketFactoryTest(unittest.TestCase):
 
         self.assertIsNotNone(bracket)
 
-        rounds = bracket.rounds
+        rounds = bracket.round_records
         self.assertEqual(len(rounds), 2)
 
         round_one = rounds[0]
         matchups = round_one.matchups
         self.assertEqual(len(matchups), 2)
 
-        playin_matchup = round_one.get_matchup_by_seed(5)
+        playin_matchup = round_one.get_matchup_slot_by_seed(5)
         self.assertIsNotNone(playin_matchup)
         sorted_playin_slots = get_sorted_slots(playin_matchup)
         self.assertEqual(sorted_playin_slots[0].seed, 4)
         self.assertEqual(sorted_playin_slots[1].seed, 5)
 
-        one_matchup = round_one.get_matchup_by_seed(1)
+        one_matchup = round_one.get_matchup_slot_by_seed(1)
         playin_matchup_slots = one_matchup.get_slots_by_type(MatchupSlot)
         self.assertEqual(playin_matchup, playin_matchup_slots[0].matchup)
 
         one_team_slots = one_matchup.get_slots_by_type(TeamSlot)
         self.assertEqual(one_team_slots[0].seed, 1)
 
-        two_seven_matchup = round_one.get_matchup_by_seed(2)
+        two_seven_matchup = round_one.get_matchup_slot_by_seed(2)
         two_seven_slots_sorted = get_sorted_slots(two_seven_matchup)
         self.assertEqual(two_seven_slots_sorted[0].seed, 2)
         self.assertEqual(two_seven_slots_sorted[1].seed, 7)
@@ -90,7 +90,7 @@ class BracketFactoryTest(unittest.TestCase):
         dtos = [SubjectDTO(), SubjectDTO()]
         bracket = BracketFactory.generate_bracket_from_dtos(dtos, '')
         self.assertIsNotNone(bracket)
-        rounds = bracket.rounds
+        rounds = bracket.round_records
         self.assertEqual(len(rounds), 1)
         matchups = rounds[0].matchups
         self.assertEqual(len(matchups), 1)
@@ -112,7 +112,7 @@ class BracketFactoryTest(unittest.TestCase):
         dtos = [SubjectDTO(), SubjectDTO()]
         original_bracket = BracketFactory.generate_bracket_from_dtos(dtos, 'test bracket')
         bracket_dict = to_dict(original_bracket)
-        new_bracket = Bracket.factory(bracket_dict)
+        new_bracket = BracketRecord.factory(bracket_dict)
         self.assertEqual(original_bracket, new_bracket)
 
 
