@@ -36,10 +36,10 @@ def to_matchup_dtos(matchup_records):
 
 def to_matchup_dto(matchup_record):
     # type: (MatchupRecord) -> MatchupDTO
-    return MatchupDTO(matchupId=matchup_record.id,
-                      slotOneId=matchup_record.slot_one_id,
-                      slotTwoId=matchup_record.slot_two_id,
-                      winnerSlotId=matchup_record.winner_slot_id,
+    return MatchupDTO(matchupId=str(matchup_record.id),
+                      slotOneId=str(matchup_record.slot_one_id),
+                      slotTwoId=str(matchup_record.slot_two_id),
+                      winnerSlotId=str(matchup_record.winner_slot_id),
                       region=matchup_record.region,
-                      sourceMatchupOneId=matchup_record.source_matchup_one_id,
-                      sourceMatchupTwoId=matchup_record.source_matchup_two_id)
+                      sourceMatchupOneId=str(matchup_record.source_matchup_one_id),
+                      sourceMatchupTwoId=str(matchup_record.source_matchup_two_id))

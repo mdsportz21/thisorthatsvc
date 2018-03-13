@@ -82,10 +82,6 @@ class RoundRecord(BaseRecord):
     def matchup_records(self, value):
         self._matchup_records = value
 
-    def add_matchup(self, matchup_record):
-        # type: (MatchupRecord) -> None
-        self.matchup_records.append(matchup_record)
-
     def __eq__(self, other):
         return self.matchup_records == other.matchup_records
 
@@ -110,15 +106,15 @@ class RoundRecord(BaseRecord):
 class MatchupRecord(BaseRecord):
     """
     :type _id: ObjectId
-    :type slot_one_id: ObjectId
-    :type slot_two_id: ObjectId
-    :type winner_slot_id: ObjectId  # This needs to be a slot so we have the seed as well
-    :type region: str
-    :type source_matchup_one_id: ObjectId
-    :type source_matchup_two_id: ObjectId
+    :type _slot_one_id: ObjectId
+    :type _slot_two_id: ObjectId
+    :type _winner_slot_id: ObjectId  # This needs to be a slot so we have the seed as well
+    :type _region: str
+    :type _source_matchup_one_id: ObjectId
+    :type _source_matchup_two_id: ObjectId
     """
 
-    def __init__(self, _id, slot_one_id=None, slot_two_id=None, winner_slot_id=None, region=None,
+    def __init__(self, _id=None, slot_one_id=None, slot_two_id=None, winner_slot_id=None, region=None,
                  source_matchup_one_id=None,
                  source_matchup_two_id=None):
         # type: (ObjectId, ObjectId, ObjectId, ObjectId, str, ObjectId, ObjectId) -> None
@@ -214,16 +210,16 @@ class SlotRecord(BaseRecord):
     """
     :type _team_id: ObjectId
     :type _seed: str
-    :type bracket_id: ObjectId
+    :type _bracket_id: ObjectId
     :type _id: ObjectId
     """
 
-    def __init__(self, team_id, seed, bracket_id, _id=None):
+    def __init__(self, team_id=None, seed=None, bracket_id=None, _id=None):
         # type: (ObjectId, str, ObjectId, ObjectId) -> None
         self._id = _id
         self._team_id = team_id
         self._seed = seed
-        self.bracket_id = bracket_id
+        self._bracket_id = bracket_id
 
     @property
     def id(self):

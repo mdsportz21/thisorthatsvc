@@ -16,9 +16,10 @@ class BracketDAO(object):
 
     def store_bracket(self, bracket_record):
         # type: (BracketRecord) -> BracketRecord
-        updated_record = self.pymongo.db.brackets.find_one_and_replace({'_id': bracket_record.id}, to_dict(bracket_record),
-                                                             upsert=True,
-                                                             return_document=ReturnDocument.AFTER)
+        updated_record = self.pymongo.db.brackets.find_one_and_replace({'_id': bracket_record.id},
+                                                                       to_dict(bracket_record),
+                                                                       upsert=True,
+                                                                       return_document=ReturnDocument.AFTER)
         bracket_record.id = updated_record['_id']
         return bracket_record
 
@@ -39,7 +40,8 @@ class SlotDAO(object):
         # self.mongo.db.subjects.insert_many(to_dicts(subject_records))
         updated_slot_records = []
         for slot_record in slot_records:
-            record_filter = {'_id': slot_record.id}
+            record_filter = {'_bracket_id': slot_record.bracket_id,
+                             '_team_id': slot_record.team_id}
             record_replacement = {'$set': to_dict(slot_record, True)}
             updated_record = self.pymongo.db.slots.find_one_and_update(record_filter, record_replacement,
                                                                        upsert=True,
@@ -51,7 +53,7 @@ class SlotDAO(object):
 
     def get_slots(self, bracket_id):
         # type: (ObjectId) -> list[dict]
-        return list(self.pymongo.db.slots.find({'bracket_id': bracket_id}))
+        return list(self.pymongo.db.slots.find({'_bracket_id': bracket_id}))
 
     def get_slot(self, slot_id):
         # type: (ObjectId) -> dict

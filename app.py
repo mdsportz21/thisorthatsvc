@@ -28,6 +28,13 @@ with app.app_context():
     bracket_dao = BracketDAO(pymongo)
 
 
+@app.route('/api/import', methods=['POST'])
+def import_teams():
+    team_records = importer.get_team_records_from_csv('resources/hatz_import_data_final.csv')
+    team_records = team_dao.store_team_records(team_records)
+    return dumps({'importSuccessful': True}), 200
+
+
 @app.route('/api/bracket/<name>', methods=['GET'])
 def get_bracket_json_by_name(name):
     # type: (str) -> str
@@ -35,13 +42,6 @@ def get_bracket_json_by_name(name):
     bracket_record = bracket_repository.get_bracket(name)
     slot_records = slot_repository.get_slots(bracket_record.id)
     return get_bracket_json(team_records, slot_records, bracket_record)
-
-
-@app.route('/api/import', methods=['POST'])
-def import_teams():
-    team_records = importer.get_team_records_from_csv('resources/hatz_import_data_final.csv')
-    team_records = team_dao.store_team_records(team_records)
-    return dumps({'importSuccessful': True}), 200
 
 
 @app.route('/api/bracket', methods=['POST'])
@@ -54,7 +54,7 @@ def generate_bracket():
     if bracket_repository.has_bracket(name):
         abort(400, {'message': 'bracket with name {0} already exists'.format(name)})
 
-    team_records = team_repository.get_team_records()
+    team_records = team_repository.get_team_records()[0:4]
     bracket_id = ObjectId()
     slot_records = BracketFactory.generate_slot_records(team_records, bracket_id)
     slot_records = slot_dao.store_slots(slot_records)
@@ -69,10 +69,10 @@ def get_bracket_json(team_records, slot_records, bracket_record):
     # type: (list[TeamRecord], list[SlotRecord], BracketRecord) -> str
     bracket_wrapper_dto = BracketWrapperDTO(bracket=codec.to_bracket_dto(bracket_record),
                                             teams=codec.to_team_dtos(team_records, slot_records))
-    return to_json(bracket_wrapper_dto, 'bracket')
+    return to_json(bracket_wrapper_dto, 'bracket_wrapper')
 
 
-def to_json(items, name='subjects', other_dict=None):
+def to_json(items, name, other_dict=None):
     # type: (object, str, dict) -> str
     json_items = [to_dict(item) for item in items] if isinstance(items, Iterable) else to_dict(items)
     results = {name: json_items}
