@@ -44,6 +44,21 @@ def get_bracket_json_by_name(name):
     return get_bracket_json(team_records, slot_records, bracket_record)
 
 
+@app.route('/api/bracket/<name>/results', methods=['POST'])
+def save_bracket_results(name):
+    # validate and extract
+    if not request.json or 'results' not in request.json:
+        abort(400, {'message': 'results required in response'})
+    print "###", request.json, "###"
+    results = request.json['results']
+    print results
+    # TODO: get bracket
+    # TODO: write results to bracket
+    # TODO: validate slots are connected throughout tree (winner was in all previous matchups)
+    # TODO: save
+    # TODO: return ok
+
+
 @app.route('/api/bracket', methods=['POST'])
 def generate_bracket():
     if not request.json or 'name' not in request.json:
@@ -54,7 +69,7 @@ def generate_bracket():
     if bracket_repository.has_bracket(name):
         abort(400, {'message': 'bracket with name {0} already exists'.format(name)})
 
-    team_records = team_repository.get_team_records()[0:4]
+    team_records = team_repository.get_team_records()[0:15]
     bracket_id = ObjectId()
     slot_records = BracketFactory.generate_slot_records(team_records, bracket_id)
     slot_records = slot_dao.store_slots(slot_records)

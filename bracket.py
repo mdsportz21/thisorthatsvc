@@ -12,7 +12,7 @@ class BracketFactory(object):
         # type: (list[SlotRecord], ObjectId, str) -> BracketRecord
         round_records = []  # type: list[RoundRecord]
 
-        slot_records = sorted(slot_records_unsorted, key=lambda slot: slot.seed)
+        slot_records = sorted(slot_records_unsorted, key=lambda slot: int(slot.seed))
 
         # create playin round
         matchup_records = []
@@ -38,19 +38,50 @@ class BracketFactory(object):
             round_records) > 0 else []  # type: list[MatchupRecord]
 
         # create first round with remaining records
-        while len(slot_records) > 0:
-            team_slot_one_id = slot_records.pop(0).id
+        assert (len(slot_records) + len(playin_matchup_records)) % 2 == 0
+
+        while len(slot_records) > 0 or len(playin_matchup_records) > 0:
+            team_slot_one_id = None
             team_slot_two_id = None
-            source_matchup_id = None
+            source_matchup_one_id = None
+            source_matchup_two_id = None
 
-            if len(playin_matchup_records) > 0:
-                playin_matchup_record = playin_matchup_records.pop()
-                source_matchup_id = playin_matchup_record.id
+            if len(matchup_records) == 0:
+                if len(slot_records) > 0:
+                    team_slot_one_id = slot_records.pop(0).id
+                else:
+                    source_matchup_one_id = playin_matchup_records.pop(0).id
+
+                if len(playin_matchup_records) > 0:
+                    source_matchup_two_id = playin_matchup_records.pop().id
+                else:
+                    team_slot_two_id = slot_records.pop().id
+
             else:
-                team_slot_two_id = slot_records.pop().id
+                # n/2, where n = len(slot_records) + len(playin_matchup_records)
+                n_over_2 = int(floor((len(slot_records) + len(playin_matchup_records)) / 2))
+                if n_over_2 < len(slot_records):
+                    slot_index = n_over_2
+                    team_slot_one_id = slot_records.pop(slot_index).id
+                else:
+                    slot_index = n_over_2 - len(slot_records)
+                    source_matchup_one_id = playin_matchup_records.pop(slot_index).id
 
-            matchup_records.append(MatchupRecord(slot_one_id=team_slot_one_id, slot_two_id=team_slot_two_id,
-                                                 source_matchup_two_id=source_matchup_id, _id=ObjectId()))
+                n_over_2 = int(floor((len(slot_records) + len(playin_matchup_records)) / 2))
+                if n_over_2 < len(slot_records):
+                    slot_index = n_over_2
+                    team_slot_two_id = slot_records.pop(slot_index).id
+                else:
+                    slot_index = n_over_2 - len(slot_records)
+                    source_matchup_two_id = playin_matchup_records.pop(slot_index).id
+
+                # TODO: make the higher seed slot one?
+
+            matchup_records.append(MatchupRecord(slot_one_id=team_slot_one_id,
+                                                 slot_two_id=team_slot_two_id,
+                                                 source_matchup_one_id=source_matchup_one_id,
+                                                 source_matchup_two_id=source_matchup_two_id,
+                                                 _id=ObjectId()))
 
         # round one
         assert log(len(matchup_records), 2) % 1 == 0 or len(matchup_records) == 1

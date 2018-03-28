@@ -165,9 +165,12 @@ _$ curl http://localhost:5000/api/subjects | json_pp_
 _$ curl http://localhost:5000/api/ranking | json_pp_  
 _$ curl http://localhost:5000/api/scrape -X POST_   
 _$ curl http://localhost:5000/api/import -X POST_  
-_$ curl -H "Content-Type: application/json" -X POST -d '{"name": "final_four"}' http://localhost:5000/api/bracket_  
-_$ curl http://localhost:5000/api/bracket/final_four | json_pp_  
 
+Create Bracket
+_$ curl -H "Content-Type: application/json" -X POST -d '{"name": "15"}' http://localhost:5000/api/bracket_  
+
+Get Bracket
+_$ curl http://localhost:5000/api/bracket/elite_eight | json_pp > bracket_20180317.json_
   
   
 **Sources**
