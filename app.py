@@ -12,7 +12,8 @@ from bracket import BracketFactory
 from db.storage import TeamDAO, SlotDAO, BracketDAO
 from model import codec
 from model.dto import BracketWrapperDTO
-from model.record import TeamRecord, BracketRecord, SlotRecord
+from model.record import TeamRecord, BracketRecord, SlotRecord, MatchupRecord
+from bracket import BracketFactory
 from repository import TeamRepository, BracketRepository, SlotRepository
 from util import to_dict
 
@@ -46,17 +47,35 @@ def get_bracket_json_by_name(name):
 
 @app.route('/api/bracket/<name>/results', methods=['POST'])
 def save_bracket_results(name):
-    # validate and extract
+    # extract
     if not request.json or 'results' not in request.json:
         abort(400, {'message': 'results required in response'})
     print "###", request.json, "###"
-    results = request.json['results']
-    print results
-    # TODO: get bracket
-    # TODO: write results to bracket
-    # TODO: validate slots are connected throughout tree (winner was in all previous matchups)
-    # TODO: save
-    # TODO: return ok
+    results = request.json['results']  # type: list of dict of obj
+
+    # get bracket
+    bracket_record = bracket_repository.get_bracket(name)
+
+    # erase results
+    BracketFactory.clear_results(bracket_record)
+
+    # write results to bracket
+    for bracket_result_dto in results:
+        matchup_id = ObjectId(bracket_result_dto['matchupId'])
+        winner_slot_id = ObjectId(bracket_result_dto['winnerSlotId'])
+
+        # set winner
+        BracketFactory.setWinner(bracket_record, matchup_id, winner_slot_id)
+
+    # validate
+
+    BracketFactory.validate(bracket_record)
+
+    # save
+    bracket_repository.store_bracket(bracket_record)
+
+    # return ok
+    return dumps({'resultsSaved': True}), 200
 
 
 @app.route('/api/bracket', methods=['POST'])
@@ -93,7 +112,8 @@ def to_json(items, name, other_dict=None):
     results = {name: json_items}
     if other_dict is not None:
         results.update(other_dict)
-    return dumps(results)
+    # return dumps(results)
+    return jsonify(results)
 
 
 @app.errorhandler(404)
@@ -107,4 +127,4 @@ def custom400(error):
 
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    app.run(debug=True, threaded=True)

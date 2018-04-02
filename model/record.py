@@ -126,7 +126,6 @@ class MatchupRecord(BaseRecord):
         self._source_matchup_one_id = source_matchup_one_id
         self._source_matchup_two_id = source_matchup_two_id
 
-        # TODO: validate that winner is slot one or slot two
         # TODO: validate that slot one comes from matchup one
         # TODO: validate that slot two comes from matchup two
 
@@ -160,6 +159,8 @@ class MatchupRecord(BaseRecord):
 
     @winner_slot_id.setter
     def winner_slot_id(self, value):
+        # if value is not None:
+        #     assert value == self.slot_one_id or value == self.slot_two_id
         self._winner_slot_id = value
 
     @property

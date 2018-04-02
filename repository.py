@@ -10,8 +10,9 @@ class BracketRepository(object):
     def __init__(self, pymongo):
         self.bracket_dao = BracketDAO(pymongo)
 
-    def store_bracket(self, bracket):
-        self.bracket_dao.store_bracket(bracket)
+    def store_bracket(self, bracket_record):
+        # type -> (BracketRecord) -> (BracketRecord)
+        return self.bracket_dao.store_bracket(bracket_record)
 
     def get_bracket(self, name):
         bracket_dict = self.bracket_dao.get_bracket(name)

@@ -170,7 +170,7 @@ Create Bracket
 _$ curl -H "Content-Type: application/json" -X POST -d '{"name": "15"}' http://localhost:5000/api/bracket_  
 
 Get Bracket
-_$ curl http://localhost:5000/api/bracket/elite_eight | json_pp > bracket_20180317.json_
+_$ curl http://localhost:5000/api/bracket/15 | json_pp > bracket_20180317.json_
   
   
 **Sources**
@@ -178,3 +178,6 @@ _$ curl http://localhost:5000/api/bracket/elite_eight | json_pp > bracket_201803
 2. https://github.com/adam-p/markdown-here/wiki/Markdown-Cheatsheet
 3. https://flask-cors.readthedocs.io/en/latest/
 4. https://flask-pymongo.readthedocs.io/en/latest/
+
+**Troubleshooting**
+1. https://stackoverflow.com/questions/11150343/slow-requests-on-local-flask-server

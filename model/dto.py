@@ -2,7 +2,6 @@ class BaseDTO(object):
     def update(self, **kwargs):
         self.__dict__.update(kwargs)
 
-
 class BracketWrapperDTO(BaseDTO):
     """
     :type bracket: BracketDTO

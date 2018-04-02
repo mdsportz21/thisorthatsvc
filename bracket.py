@@ -75,7 +75,7 @@ class BracketFactory(object):
                     slot_index = n_over_2 - len(slot_records)
                     source_matchup_two_id = playin_matchup_records.pop(slot_index).id
 
-                # TODO: make the higher seed slot one?
+                    # TODO: make the higher seed slot one?
 
             matchup_records.append(MatchupRecord(slot_one_id=team_slot_one_id,
                                                  slot_two_id=team_slot_two_id,
@@ -86,7 +86,6 @@ class BracketFactory(object):
         # round one
         assert log(len(matchup_records), 2) % 1 == 0 or len(matchup_records) == 1
         round_records.append(RoundRecord(matchup_records=matchup_records))
-
 
         # while we haven't reached the finals (where there is only one matchup)
         while len(round_records[-1].matchup_records) >= 2:
@@ -125,3 +124,75 @@ class BracketFactory(object):
         # Play in games don't count as a round, so don't do ceiling
         # return int(ceil(log(num_teams, 2)))
         return int(log(num_teams, 2))
+
+    @staticmethod
+    def get_matchup(bracket_record, matchup_id):
+        # type: (BracketRecord, ObjectId) -> MatchupRecord or None
+        matchups_by_matchup_id = {}
+        for round_record in bracket_record.round_records:
+            for matchup_record in round_record.matchup_records:
+                if matchup_id == matchup_record.id:
+                    return matchup_record
+
+        return None
+
+    @staticmethod
+    def clear_results(bracket_record):
+        # type: (BracketRecord) -> None
+        for round_record in bracket_record.round_records:
+            for matchup_record in round_record.matchup_records:
+                if matchup_record.source_matchup_one_id is not None:
+                    matchup_record.slot_one_id = None
+                if matchup_record.source_matchup_two_id is not None:
+                    matchup_record.slot_two_id = None
+                matchup_record.winner_slot_id = None
+
+    @staticmethod
+    def get_next_matchup(bracket_record, matchup_id):
+        # type: (BracketRecord, ObjectId) -> MatchupRecord or None
+        matchups_by_matchup_id = {}
+        for round_record in bracket_record.round_records:
+            for matchup_record in round_record.matchup_records:
+                if matchup_id in (matchup_record.source_matchup_one_id, matchup_record.source_matchup_two_id):
+                    return matchup_record
+
+        return None
+
+    @staticmethod
+    def setWinner(bracket_record, matchup_id, winner_slot_id):
+        # type: (BracketRecord, ObjectId, ObjectId) -> None
+
+        # get matchup
+        matchup_record = BracketFactory.get_matchup(bracket_record, matchup_id)
+
+        # set winner
+        matchup_record.winner_slot_id = winner_slot_id
+
+        # get next matchup
+        next_matchup_record = BracketFactory.get_next_matchup(bracket_record, matchup_id)
+
+        # advance winner to next matchup
+        if next_matchup_record is not None:
+            if next_matchup_record.source_matchup_one_id == matchup_id:
+                next_matchup_record.slot_one_id = winner_slot_id
+            else:
+                next_matchup_record.slot_two_id = winner_slot_id
+
+    @staticmethod
+    def validate(bracket_record):
+        for round_record in bracket_record.round_records:
+            for matchup_record in round_record.matchup_records:
+                winner_slot_id = matchup_record.winner_slot_id
+                slot_one_id = matchup_record.slot_one_id
+                slot_two_id = matchup_record.slot_two_id
+
+                if winner_slot_id is not None:
+                    assert winner_slot_id in (slot_one_id, slot_two_id)
+
+                if matchup_record.source_matchup_one_id is not None and slot_one_id is not None:
+                    source_matchup_one = BracketFactory.get_matchup(bracket_record, matchup_record.source_matchup_one_id)
+                    assert slot_one_id in (source_matchup_one.slot_one_id, source_matchup_one.slot_two_id)
+
+                if matchup_record.source_matchup_two_id is not None and slot_two_id is not None:
+                    source_matchup_two = BracketFactory.get_matchup(bracket_record, matchup_record.source_matchup_two_id)
+                    assert slot_two_id in (source_matchup_two.slot_one_id, source_matchup_two.slot_two_id)
