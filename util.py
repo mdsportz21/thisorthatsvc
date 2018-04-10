@@ -10,7 +10,7 @@ def to_dict(obj, delete_id=False):
     and mappings (dicts) of primitives (bool, int, float, string, ...).
     Delete *top level* _id field if delete_id is True.
     """
-    if isinstance(obj, basestring):
+    if isinstance(obj, str):
         return obj
     elif isinstance(obj, dict):
         return dict((key, to_dict(val)) for key, val in obj.items() if not delete_id or key != ID_ATTR)

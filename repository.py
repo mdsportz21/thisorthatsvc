@@ -16,7 +16,7 @@ class BracketRepository(object):
 
     def get_bracket(self, name):
         bracket_dict = self.bracket_dao.get_bracket(name)
-        return BracketRecord.factory(bracket_dict)
+        return BracketRecord.factory(bracket_dict) if bracket_dict is not None else None
 
     def has_bracket(self, name):
         return self.bracket_dao.get_bracket(name) is not None
