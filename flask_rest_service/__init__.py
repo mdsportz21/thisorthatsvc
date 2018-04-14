@@ -19,7 +19,7 @@ from util import to_dict
 
 MONGO_URL = os.environ.get('MONGO_URL')
 if not MONGO_URL:
-    MONGO_URL = "mongodb://localhost:27017/rest"
+    MONGO_URL = "mongodb://localhost:27017/thisorthat"
 
 app = Flask(__name__)
 
