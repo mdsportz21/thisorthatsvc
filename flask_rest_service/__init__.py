@@ -25,7 +25,7 @@ app = Flask(__name__)
 
 with app.app_context():
     app.config['MONGO_URI'] = MONGO_URL
-    CORS(app, resources={r"/api/*": {"origins": "http://localhost:3000"}})
+    CORS(app, resources={r"/api/*": {"origins": ["http://localhost:3000", "https://damp-ridge-24839.herokuapp.com"]}})
     pymongo = PyMongo(app)
     team_repository = TeamRepository(pymongo)
     bracket_repository = BracketRepository(pymongo)
