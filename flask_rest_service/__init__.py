@@ -1,4 +1,5 @@
 #!flask/bin/python
+import os
 from collections import Iterable
 
 from bson import ObjectId
@@ -12,14 +13,19 @@ from bracket import BracketFactory
 from db.storage import TeamDAO, SlotDAO, BracketDAO
 from model import codec
 from model.dto import BracketWrapperDTO
-from model.record import TeamRecord, BracketRecord, SlotRecord, MatchupRecord
-from bracket import BracketFactory
+from model.record import TeamRecord, BracketRecord, SlotRecord
 from repository import TeamRepository, BracketRepository, SlotRepository
 from util import to_dict
 
-app = Flask('thisorthat')
+MONGO_URL = os.environ.get('MONGO_URL')
+if not MONGO_URL:
+    MONGO_URL = "mongodb://localhost:27017/thisorthat"
+
+app = Flask(__name__)
+
 with app.app_context():
-    CORS(app, resources={r"/api/*": {"origins": "http://localhost:3000"}})
+    app.config['MONGO_URI'] = MONGO_URL
+    CORS(app, resources={r"/api/*": {"origins": ["http://localhost:3000", "https://damp-ridge-24839.herokuapp.com"]}})
     pymongo = PyMongo(app)
     team_repository = TeamRepository(pymongo)
     bracket_repository = BracketRepository(pymongo)
@@ -27,6 +33,14 @@ with app.app_context():
     team_dao = TeamDAO(pymongo)
     slot_dao = SlotDAO(pymongo)
     bracket_dao = BracketDAO(pymongo)
+
+
+@app.route('/', methods=['GET'])
+def test():
+    return dumps({
+        'status': 'OK',
+        'mongo': str(pymongo.db),
+    }), 200
 
 
 @app.route('/api/import', methods=['POST'])
@@ -39,8 +53,11 @@ def import_teams():
 @app.route('/api/bracket/<name>', methods=['GET'])
 def get_bracket_json_by_name(name):
     # type: (str) -> str
-    team_records = team_repository.get_team_records()
     bracket_record = bracket_repository.get_bracket(name)
+    if bracket_record is None:
+        return not_found()
+
+    team_records = team_repository.get_team_records()
     slot_records = slot_repository.get_slots(bracket_record.id)
     return get_bracket_json(team_records, slot_records, bracket_record)
 
@@ -50,7 +67,7 @@ def save_bracket_results(name):
     # extract
     if not request.json or 'results' not in request.json:
         abort(400, {'message': 'results required in response'})
-    print "###", request.json, "###"
+    print("###", request.json, "###")
     results = request.json['results']  # type: list of dict of obj
 
     # get bracket
@@ -124,7 +141,3 @@ def not_found():
 @app.errorhandler(400)
 def custom400(error):
     return make_response(jsonify({'message': error.description['message']}), 400)
-
-
-if __name__ == '__main__':
-    app.run(debug=True, threaded=True)

@@ -4,3 +4,6 @@ flask/
 .cache/
 resources/
 .DS_Store
+bin/
+lib/
+include/
