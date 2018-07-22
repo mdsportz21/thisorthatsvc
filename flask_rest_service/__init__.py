@@ -8,13 +8,13 @@ from flask import Flask, jsonify, make_response, request, abort
 from flask_cors import CORS
 from flask_pymongo import PyMongo
 
-import importer
+import scraper
 from bracket import BracketFactory
-from db.storage import TeamDAO, SlotDAO, BracketDAO
+from db.storage import TeamDAO, BracketDAO
 from model import codec
-from model.dto import BracketWrapperDTO
-from model.record import TeamRecord, BracketRecord, SlotRecord
-from repository import TeamRepository, BracketRepository, SlotRepository
+from model.dto import BracketWrapperDTO, DupesDTO
+from model.record import TeamRecord, BracketRecord
+from repository import TeamRepository, BracketRepository
 from util import to_dict
 
 MONGO_URL = os.environ.get('MONGO_URL')
@@ -29,9 +29,7 @@ with app.app_context():
     pymongo = PyMongo(app)
     team_repository = TeamRepository(pymongo)
     bracket_repository = BracketRepository(pymongo)
-    slot_repository = SlotRepository(pymongo)
     team_dao = TeamDAO(pymongo)
-    slot_dao = SlotDAO(pymongo)
     bracket_dao = BracketDAO(pymongo)
 
 
@@ -43,10 +41,11 @@ def test():
     }), 200
 
 
+# for dev purposes
 @app.route('/api/import', methods=['POST'])
 def import_teams():
-    team_records = importer.get_team_records_from_csv('resources/hatz_import_data_final.csv')
-    team_records = team_dao.store_team_records(team_records)
+    team_records = scraper.get_teams_from_files()
+    team_dao.store_team_records(team_records)
     return dumps({'importSuccessful': True}), 200
 
 
@@ -114,6 +113,32 @@ def generate_bracket():
 
     return get_bracket_json(team_records, slot_records, bracket_record)
     # TODO: make sure slot and subject dtos are returned with IDs
+
+
+@app.route('/api/dupes', methods=['POST'])
+def save_dupes():
+    if not request.json:
+        abort(400, {'message': 'json required in request'})
+    if 'teamIds' not in request.json:
+        abort(400, {'message': 'teamIds required in request'})
+    if 'name' not in request.json:
+        abort(400, {'message': 'team_ids required in request'})
+
+    name = request.json['name']
+    team_ids = [ObjectId(team_id) for team_id in request.json['teamIds']]
+
+    team_repository.save_dupes(name, team_ids)
+
+    # return ok
+    return dumps({'resultsSaved': True}), 200
+
+
+@app.route('/api/dupes', methods=['GET'])
+def get_dupe_grouping() -> str:
+    teams = team_repository.get_group_with_max_count()
+    name = teams[0].name if len(teams) > 0 else None
+    dupes_dto = DupesDTO(name=name, teams=codec.to_team_dtos(teams))
+    return to_json(dupes_dto, 'dupeGroup')
 
 
 def get_bracket_json(team_records, slot_records, bracket_record):

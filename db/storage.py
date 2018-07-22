@@ -1,9 +1,11 @@
 from bson import ObjectId
 from flask_pymongo import PyMongo
-from pymongo import ReturnDocument
+from pymongo import ReturnDocument, UpdateMany
 
-from model.record import TeamRecord, BracketRecord, SlotRecord
+from model.record import TeamRecord, BracketRecord
 from util import to_dict
+from typing import List
+
 
 
 class BracketDAO(object):
@@ -27,39 +29,6 @@ class BracketDAO(object):
         return self.pymongo.db.brackets.find_one({'_name': name})
 
 
-class SlotDAO(object):
-    """
-    :type mongo: PyMongo
-    """
-
-    def __init__(self, pymongo):
-        self.pymongo = pymongo
-
-    def store_slots(self, slot_records):
-        # type: (list[SlotRecord]) -> (list[SlotRecord])
-        # self.mongo.db.subjects.insert_many(to_dicts(subject_records))
-        updated_slot_records = []
-        for slot_record in slot_records:
-            record_filter = {'_bracket_id': slot_record.bracket_id,
-                             '_team_id': slot_record.team_id}
-            record_replacement = {'$set': to_dict(slot_record, True)}
-            updated_record = self.pymongo.db.slots.find_one_and_update(record_filter, record_replacement,
-                                                                       upsert=True,
-                                                                       return_document=ReturnDocument.AFTER)
-            slot_record.id = updated_record['_id']
-            updated_slot_records.append(slot_record)
-
-        return updated_slot_records
-
-    def get_slots(self, bracket_id):
-        # type: (ObjectId) -> list[dict]
-        return list(self.pymongo.db.slots.find({'_bracket_id': bracket_id}))
-
-    def get_slot(self, slot_id):
-        # type: (ObjectId) -> dict
-        return self.pymongo.db.slots.find_one({'_id': slot_id})
-
-
 class TeamDAO(object):
     """
     :type pymongo: PyMongo
@@ -73,7 +42,8 @@ class TeamDAO(object):
         # self.mongo.db.subjects.insert_many(to_dicts(subject_records))
         updated_team_records = []
         for team_record in team_records:
-            record_filter = {'_name': team_record.name}
+            record_filter = {'_name': team_record.name, '_img_link': team_record.img_link,
+                             '_grouping': team_record.grouping}
             record_replacement = {'$set': to_dict(team_record, True)}
             updated_record = self.pymongo.db.teams.find_one_and_update(record_filter, record_replacement,
                                                                        upsert=True,
@@ -90,3 +60,24 @@ class TeamDAO(object):
     def get_team_record(self, team_id):
         # type: (ObjectId) -> dict
         return self.pymongo.db.teams.find_one({'_id': team_id})
+
+    def get_teams_with_grouping_with_max_count(self):
+        pipeline = [
+            {"$match": {"_grouping": {"$exists": True, "$ne": "MILB"}}},
+            {"$group": {"_id": "$_grouping", "count": {"$sum": 1}}},
+            {"$sort": {"count": -1}}
+        ]
+
+        groupings = list(self.pymongo.db.teams.aggregate(pipeline))
+        if len(groupings) == 0:
+            return []
+
+        grouping = groupings[0]['_id']
+
+        return list(self.pymongo.db.teams.find({"_grouping": grouping}))
+
+    def store_dupes(self, name, team_ids: List[ObjectId]) -> None:
+        requests = [UpdateMany({"_id": {"$in": team_ids}}, {"$set": {"_duplicate": True}}),
+                    UpdateMany({"_id": {"$nin": team_ids}, "_grouping": {"$eq": name}}, {"$set": {"_duplicate": False}}),
+                    UpdateMany({"_grouping": {"$eq": name}}, {"$set": {"_grouping": "MILB"}})]
+        self.pymongo.db.teams.bulk_write(requests)

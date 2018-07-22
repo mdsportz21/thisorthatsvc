@@ -38,20 +38,20 @@ class RoundDTO(BaseDTO):
 class MatchupDTO(BaseDTO):
     """
     :type matchupId: str
-    :type slotOneId: str
-    :type slotTwoId: str
-    :type winnerSlotId: str
+    :type teamOneId: str
+    :type teamTwoId: str
+    :type winnerTeamId: str
     :type region: str
     :type sourceMatchupOneId: str
     :type sourceMatchupTwoId: str
     """
 
-    def __init__(self, matchupId, slotOneId, slotTwoId, winnerSlotId, region, sourceMatchupOneId, sourceMatchupTwoId):
+    def __init__(self, matchupId, teamOneId, teamTwoId, winnerTeamId, region, sourceMatchupOneId, sourceMatchupTwoId):
         # type: (str, str, str, str, str, str, str) -> None
         self.matchupId = matchupId
-        self.slotOneId = slotOneId
-        self.slotTwoId = slotTwoId
-        self.winnerSlotId = winnerSlotId
+        self.teamOneId = teamOneId
+        self.teamTwoId = teamTwoId
+        self.winnerTeamId = winnerTeamId
         self.region = region
         self.sourceMatchupOneId = sourceMatchupOneId
         self.sourceMatchupTwoId = sourceMatchupTwoId
@@ -60,24 +60,25 @@ class MatchupDTO(BaseDTO):
 # TeamDTO = TeamRecord + SlotRecord
 class TeamDTO(BaseDTO):
     """
-    :type slotId: str
+    :type teamId: str
     :type name: str
     :type imgLink: str
     :type seed: str
     """
 
-    def __init__(self, slotId, name, seed=None, imgLink=None):
+    def __init__(self, teamId, name, seed=None, imgLink=None):
         # type: (str, str, str, str) -> None
         self.name = name
         self.imgLink = imgLink
-        self.slotId = slotId
+        self.teamId = teamId
         self.seed = seed
 
-        # @staticmethod
-        # def team_dto_factory(team_dto_dict):
-        #     # type: (dict) -> TeamDTO
-        #     team = TeamDTO()
-        #     team.update(**team_dto_dict)
-        #     if team.teamId is not None and isinstance(team.teamId, six.string_types):
-        #         team.teamId = ObjectId(team.teamId)
-        #     return team
+
+class DupesDTO(BaseDTO):
+    """
+    :type name: str
+    :type teams: list of TeamDTO
+    """
+    def __init__(self, name, teams):
+        self.name = name
+        self.teams = teams

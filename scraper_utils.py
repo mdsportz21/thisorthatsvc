@@ -1,12 +1,12 @@
 #!/usr/bin/python
 
-import urllib2
+import re
+import urllib
 
 from bs4 import BeautifulSoup
 from bs4 import NavigableString
 from bs4 import Tag
 from ratelimiter import RateLimiter
-import re
 
 
 def get_soup_contents_by_tag(tag, tag_name=None, prop_name=None, prop_value=None):
@@ -63,12 +63,12 @@ def strip(word, remove_newlines=True, remove_commas=False, encode_contents=True,
 @RateLimiter(max_calls=1, period=1)
 def get_soup(url):
     # type: (str) -> BeautifulSoup
-    req = urllib2.Request(url, headers={
+    req = urllib.request.Request(url, headers={
         'User-Agent': 'Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/51.0.2704.103 Safari/537.36'})
-    page = urllib2.urlopen(req).read()
+    page = urllib.request.urlopen(req).read()
     return BeautifulSoup(page, "lxml")
 
 
 def get_contents(tag):
     # type: (Tag) -> str
-    return ''.join([unicode(content_el) for content_el in tag.contents])
+    return ''.join([str(content_el) for content_el in tag.contents])

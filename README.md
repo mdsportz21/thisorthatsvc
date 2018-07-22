@@ -1,9 +1,106 @@
-How to model a bracket?
-A bracket has a list of rounds
-A round has a list of matchups
-A matchup has a pair of slots, a winner, a region, and 0-2 source matchups
-A slot has a team, a seed
-A team has a name and image
+Figure out a way to separate bracket and bracket entry
+Todo:
+
+  
+What's the difference between a bracket and a bracket entry?  
+<br>Bracket:
+1. Playin matchups
+2. 1st round matchups
+3. matchup map aka bracket skeleton
+
+bracket: {
+    name: 'elite_eight'
+    rounds: [{
+        matchups: [{
+            team_one_id: '',
+            team_two_id: '',
+            source_matchup_one_id: '',
+            source_matchup_two_id: ''
+        }...]
+    }...],
+    teams: [{
+        id: '',
+        name: '',
+        img_link: '',
+        seed: 1
+    }]
+}
+
+bracket_entry: {
+    id: '',
+    email: '',
+    name: 'tims_1st_entry',
+    bracket_id: '',
+    winners: [{
+        matchup_id: '',
+        winner_team_id: ''
+    }...]
+}
+
+bracket_dto: {
+    name: '',
+    bracket_entry_id: '',
+    rounds: [{
+        matchups: [{}]
+    }],
+    teams: [{}]
+}
+
+bracket_entry_request: {
+    bracket_id: '',
+    email: '',
+    index: 0 (optional)
+}
+
+bracket_entry_response: {
+    bracket_entry_id: ''
+    winners: [{}]
+}
+
+should i fill in the winners on the frontend or backend?
+* either way. we can do it on the backend since it'll be faster / less work for the frontend.
+* backend definitely needs to validate the bracket now (i think we already are).
+
+
+
+Todo:
+~~1. Change MatchupDTO.*slotId to *teamId~~
+~~2. Create a UI for de-duping hat links~~
+3. Make server URL configurable and connect this thing to heroku
+3. when creating brackets from teams, exclude where duplicate == true
+    * for all teams, set grouping to milb_hats
+    * create getAllTeamsByGroupingCall
+    * create bracket from list of team ids
+        * team ids = non-excluded teams with milb grouping
+4. on ui/svc, create bracket_entry_request
+    * bracket_id - ID of bracket
+    * email - email address of user, so we can send them results
+    * index - (optional) allows user to create multiple bracket entries
+5. translate from BracketDTO to BracketEntryRecord
+    * validate team IDs come from source matchup IDs
+    * validate winnerId is one of the teamIds
+    * for each MatchupDTO, if winnerTeamId exists, set winners[matchupId] to winnerTeamId
+    * save to db
+        * save initial bracket entry on request, that way we have somewhere to put it on first save
+        * if the bracket entry id exists, update it with the winners
+6. translate from BracketRecord & BracketEntryRecord to BracketDTO
+    * create BracketDTO from BracketRecord
+    * for each winner in BracketEntryRecord
+        * find the matchupDTO and set its winner
+    * send to frontend
+11. return hybrid bracket & bracket entry
+* reconstruct BracketDTO winners (on MatchupDTO) using bracket entry record
+
+
+8. ~~on ui/svc, create bracket_entry_response~~
+* ACTUALLY maybe we should keep the front end as is
+* And the service should construct the BracketEntryRecord from the MatchupDTOs
+* This would
+a. make it easier to validate
+b. make it consistent on the frontend. so...
+
+
+6. add dropdown which shows list of available brackets
 
 Notes:
 The source should belong to the slot because otherwise, a different slot will have

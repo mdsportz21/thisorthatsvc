@@ -1,3 +1,5 @@
+from typing import Dict
+
 from bson.objectid import ObjectId
 
 
@@ -5,19 +7,79 @@ class BaseRecord(object):
     def update(self, **kwargs):
         self.__dict__.update(kwargs)
 
+    def get_values(self) -> tuple:
+        raise NotImplementedError
+
+    def __eq__(self, other):
+        return self.get_values() == other.get_values()
+
+    def __hash__(self):
+        return hash(self.get_values())
+
+    def __str__(self):
+        return ','.join((str(value) for value in self.get_values()))
+
+
+class BracketEntryRecord(BaseRecord):
+    """ set winners to dict of bracket.matchup_id to None by default"""
+    WinnersType = Dict[ObjectId, ObjectId]
+
+    def __init__(self, _id: ObjectId, name: str, bracket_id: ObjectId, winners: WinnersType) -> None:
+        self._id = _id
+        self._name = name
+        self._bracket_id = bracket_id
+        self._winners = winners
+
+    @property
+    def id(self) -> ObjectId:
+        return self._id
+
+    @id.setter
+    def id(self, value: ObjectId) -> None:
+        self._id = value
+
+    @property
+    def name(self) -> str:
+        return self._name
+
+    @name.setter
+    def name(self, value: str) -> None:
+        self._name = value
+
+    @property
+    def bracket_id(self) -> ObjectId:
+        return self._bracket_id
+
+    @bracket_id.setter
+    def bracket_id(self, value: ObjectId) -> None:
+        self._bracket_id = value
+
+    @property
+    def winners(self) -> WinnersType:
+        return self._winners
+
+    @winners.setter
+    def winners(self, value: WinnersType) -> None:
+        self._winners = value
+
+    def get_values(self):
+        return (self.id, self.name, self.bracket_id, self.winners)
+
 
 class BracketRecord(BaseRecord):
     """
     :type _round_records: list of RoundRecord
     :type _name: str
     :type _id: ObjectId
+    :type _team_records: list of TeamRecord
     """
 
-    def __init__(self, round_records, name, _id=None):
-        # type: (list[RoundRecord], str) -> None
+    def __init__(self, round_records, name, _id=None, team_records=list()):
+        # type: (list[RoundRecord], str, ObjectId, list[TeamRecord]) -> None
         self._round_records = round_records
         self._name = name
         self._id = _id
+        self._team_records = team_records
 
     @property
     def id(self):
@@ -43,15 +105,16 @@ class BracketRecord(BaseRecord):
     def round_records(self, value):
         self._round_records = value
 
-    def __eq__(self, other):
-        return self.round_records == other.round_records and \
-               self.name == other.name
+    @property
+    def team_records(self):
+        return self._team_records
 
-    def __hash__(self):
-        return hash((self.round_records, self.name))
+    @team_records.setter
+    def team_records(self, value):
+        self._team_records = value
 
-    def __str__(self):
-        return str(self.name + ": " + str(self.round_records))
+    def get_values(self):
+        return (self.round_records, self.name, self.id, self.team_records)
 
     @staticmethod
     def factory(bracket_dict):
@@ -82,14 +145,8 @@ class RoundRecord(BaseRecord):
     def matchup_records(self, value):
         self._matchup_records = value
 
-    def __eq__(self, other):
-        return self.matchup_records == other.matchup_records
-
-    def __hash__(self):
-        return hash(self.matchup_records)
-
-    def __str__(self):
-        return str(self.matchup_records)
+    def get_values(self):
+        return (self.matchup_records)
 
     @staticmethod
     def factory(round_dict):
@@ -106,28 +163,23 @@ class RoundRecord(BaseRecord):
 class MatchupRecord(BaseRecord):
     """
     :type _id: ObjectId
-    :type _slot_one_id: ObjectId
-    :type _slot_two_id: ObjectId
-    :type _winner_slot_id: ObjectId  # This needs to be a slot so we have the seed as well
+    :type _team_one_id: ObjectId
+    :type _team_two_id: ObjectId
     :type _region: str
     :type _source_matchup_one_id: ObjectId
     :type _source_matchup_two_id: ObjectId
     """
 
-    def __init__(self, _id=None, slot_one_id=None, slot_two_id=None, winner_slot_id=None, region=None,
+    def __init__(self, _id=None, team_one_id=None, team_two_id=None, region=None,
                  source_matchup_one_id=None,
                  source_matchup_two_id=None):
-        # type: (ObjectId, ObjectId, ObjectId, ObjectId, str, ObjectId, ObjectId) -> None
+        # type: (ObjectId, ObjectId, ObjectId, str, ObjectId, ObjectId) -> None
         self._id = _id
-        self._slot_one_id = slot_one_id
-        self._slot_two_id = slot_two_id
-        self._winner_slot_id = winner_slot_id
+        self._team_one_id = team_one_id
+        self._team_two_id = team_two_id
         self._region = region
         self._source_matchup_one_id = source_matchup_one_id
         self._source_matchup_two_id = source_matchup_two_id
-
-        # TODO: validate that slot one comes from matchup one
-        # TODO: validate that slot two comes from matchup two
 
     @property
     def id(self):
@@ -138,30 +190,20 @@ class MatchupRecord(BaseRecord):
         self._id = value
 
     @property
-    def slot_one_id(self):
-        return self._slot_one_id
+    def team_one_id(self):
+        return self._team_one_id
 
-    @slot_one_id.setter
-    def slot_one_id(self, value):
-        self._slot_one_id = value
-
-    @property
-    def slot_two_id(self):
-        return self._slot_two_id
-
-    @slot_two_id.setter
-    def slot_two_id(self, value):
-        self._slot_two_id = value
+    @team_one_id.setter
+    def team_one_id(self, value):
+        self._team_one_id = value
 
     @property
-    def winner_slot_id(self):
-        return self._winner_slot_id
+    def team_two_id(self):
+        return self._team_two_id
 
-    @winner_slot_id.setter
-    def winner_slot_id(self, value):
-        # if value is not None:
-        #     assert value == self.slot_one_id or value == self.slot_two_id
-        self._winner_slot_id = value
+    @team_two_id.setter
+    def team_two_id(self, value):
+        self._team_two_id = value
 
     @property
     def region(self):
@@ -187,17 +229,10 @@ class MatchupRecord(BaseRecord):
     def source_matchup_two_id(self, value):
         self._source_matchup_two_id = value
 
-    def __eq__(self, other):
-        return self.slot_one_id == other.slot_one_id \
-               and self.slot_two_id == other.slot_two_id \
-               and self.region == other.region
-
-    def __hash__(self):
-        return hash((self.slot_one_id, self.slot_two_id, self.region))
-
-    def __str__(self):
-        return self.region + ": " + str(self.slot_one_id) + " vs " + str(self.slot_two_id) + " => " + str(
-            self.winner_slot_id)
+    def get_values(self):
+        # type: (MatchupRecord) -> (ObjectId, ObjectId, ObjectId, str, ObjectId, ObjectId)
+        return (self.id, self.team_one_id, self.team_two_id, self.region, self.source_matchup_one_id,
+                self.source_matchup_two_id)
 
     @staticmethod
     def factory(matchup_record_dict):
@@ -207,84 +242,22 @@ class MatchupRecord(BaseRecord):
         return matchup_record
 
 
-class SlotRecord(BaseRecord):
-    """
-    :type _team_id: ObjectId
-    :type _seed: str
-    :type _bracket_id: ObjectId
-    :type _id: ObjectId
-    """
-
-    def __init__(self, team_id=None, seed=None, bracket_id=None, _id=None):
-        # type: (ObjectId, str, ObjectId, ObjectId) -> None
-        self._id = _id
-        self._team_id = team_id
-        self._seed = seed
-        self._bracket_id = bracket_id
-
-    @property
-    def id(self):
-        return self._id
-
-    @id.setter
-    def id(self, value):
-        self._id = value
-
-    @property
-    def seed(self):
-        return self._seed
-
-    @seed.setter
-    def seed(self, value):
-        self._seed = value
-
-    @property
-    def team_id(self):
-        return self._team_id
-
-    @team_id.setter
-    def team_id(self, value):
-        self._team_id = value
-
-    @property
-    def bracket_id(self):
-        return self._bracket_id
-
-    @bracket_id.setter
-    def bracket_id(self, value):
-        self._bracket_id = value
-
-    def __eq__(self, other):
-        return self.team_id == other.team_id \
-               and self.seed == other.seed \
-               and self.bracket_id == other.bracket_id
-
-    def __hash__(self):
-        return hash((self.team_id, self.seed, self.bracket_id))
-
-    def __str__(self):
-        return ','.join((str(self.team_id), str(self.seed), str(self.bracket_id)))
-
-    @staticmethod
-    def factory(slot_record_dict):
-        # type: (dict) -> SlotRecord
-        slot_record = SlotRecord()
-        slot_record.update(**slot_record_dict)
-        return slot_record
-
-
 class TeamRecord(BaseRecord):
     """
     :type _id: ObjectId
     :type _name: str
     :type _img_link: str
+    :type _grouping: str
+    :type _seed: str
     """
 
-    def __init__(self, _id=None, name=None, img_link=None):
-        # type: (ObjectId, str, str)
+    def __init__(self, _id=None, name=None, img_link=None, grouping=None, seed=None):
+        # type: (ObjectId, str, str, str, str) -> None
         self._id = _id
         self._name = name
         self._img_link = img_link
+        self._grouping = grouping
+        self._seed = seed
 
     @property
     def id(self):
@@ -309,6 +282,26 @@ class TeamRecord(BaseRecord):
     @img_link.setter
     def img_link(self, value):
         self._img_link = value
+
+    @property
+    def grouping(self):
+        return self._grouping
+
+    @grouping.setter
+    def grouping(self, value):
+        self._grouping = value
+
+    @property
+    def seed(self):
+        return self._seed
+
+    @seed.setter
+    def seed(self, value):
+        self._seed = value
+
+    def get_values(self):
+        # type: (TeamRecord) -> (ObjectId, str, str, str, str)
+        return (self._id, self._name, self._img_link, self._grouping, self._seed)
 
     @staticmethod
     def factory(team_record_dict):

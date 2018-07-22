@@ -1,5 +1,5 @@
-from scraper import scraper
-from scraper.scraper_utils import get_soup
+import scraper
+from scraper_utils import get_soup
 
 
 def test_scrape_page():

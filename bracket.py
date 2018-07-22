@@ -3,7 +3,7 @@ from random import sample
 
 from bson import ObjectId
 
-from model.record import BracketRecord, TeamRecord, SlotRecord, MatchupRecord, RoundRecord
+from model.record import BracketRecord, TeamRecord, MatchupRecord, RoundRecord
 
 
 class BracketFactory(object):
@@ -26,7 +26,7 @@ class BracketFactory(object):
                 team_slot_one = slot_records.pop(first_playin_idx)
                 team_slot_two = slot_records.pop()
                 matchup_records.append(
-                    MatchupRecord(slot_one_id=team_slot_one.id, slot_two_id=team_slot_two.id, _id=ObjectId()))
+                    MatchupRecord(team_one_id=team_slot_one.id, team_two_id=team_slot_two.id, _id=ObjectId()))
 
             assert len(matchup_records) == num_playin_games
 
@@ -77,8 +77,8 @@ class BracketFactory(object):
 
                     # TODO: make the higher seed slot one?
 
-            matchup_records.append(MatchupRecord(slot_one_id=team_slot_one_id,
-                                                 slot_two_id=team_slot_two_id,
+            matchup_records.append(MatchupRecord(team_one_id=team_slot_one_id,
+                                                 team_two_id=team_slot_two_id,
                                                  source_matchup_one_id=source_matchup_one_id,
                                                  source_matchup_two_id=source_matchup_two_id,
                                                  _id=ObjectId()))
@@ -142,9 +142,9 @@ class BracketFactory(object):
         for round_record in bracket_record.round_records:
             for matchup_record in round_record.matchup_records:
                 if matchup_record.source_matchup_one_id is not None:
-                    matchup_record.slot_one_id = None
+                    matchup_record.team_one_id = None
                 if matchup_record.source_matchup_two_id is not None:
-                    matchup_record.slot_two_id = None
+                    matchup_record.team_two_id = None
                 matchup_record.winner_slot_id = None
 
     @staticmethod
@@ -183,8 +183,8 @@ class BracketFactory(object):
         for round_record in bracket_record.round_records:
             for matchup_record in round_record.matchup_records:
                 winner_slot_id = matchup_record.winner_slot_id
-                slot_one_id = matchup_record.slot_one_id
-                slot_two_id = matchup_record.slot_two_id
+                slot_one_id = matchup_record.team_one_id
+                slot_two_id = matchup_record.team_two_id
 
                 if winner_slot_id is not None:
                     assert winner_slot_id in (slot_one_id, slot_two_id)

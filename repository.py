@@ -1,9 +1,7 @@
-from bson import ObjectId
-
-from db.storage import TeamDAO, BracketDAO, SlotDAO
+from db.storage import TeamDAO, BracketDAO
 from model import codec
 from model.dto import TeamDTO
-from model.record import TeamRecord, BracketRecord, SlotRecord
+from model.record import TeamRecord, BracketRecord
 
 
 class BracketRepository(object):
@@ -20,19 +18,6 @@ class BracketRepository(object):
 
     def has_bracket(self, name):
         return self.bracket_dao.get_bracket(name) is not None
-
-
-class SlotRepository(object):
-    """
-    :type slot_dao: SlotDAO
-    """
-
-    def __init__(self, pymongo):
-        self.slot_dao = SlotDAO(pymongo)
-
-    def get_slots(self, bracket_id):
-        # type: (ObjectId) -> list[SlotRecord]
-        return [SlotRecord.factory(slot_dict) for slot_dict in self.slot_dao.get_slots(bracket_id)]
 
 
 class TeamRepository(object):
@@ -56,3 +41,10 @@ class TeamRepository(object):
         # type: (list[TeamDTO]) -> None
         subject_records = codec.to_subject_records(team_dtos)
         self.team_dao.store_team_records(subject_records)
+
+    def get_group_with_max_count(self):
+        return [TeamRecord.factory(team_dict) for team_dict in self.team_dao.get_teams_with_grouping_with_max_count()]
+
+    def save_dupes(self, name, team_ids):
+        self.team_dao.store_dupes(name, team_ids)
+
