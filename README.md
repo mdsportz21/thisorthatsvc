@@ -268,8 +268,8 @@ _$ curl -H "Content-Type: application/json" -X POST -d '{"name": "15"}' http://l
 
 Get Bracket
 _$ curl http://localhost:5000/api/bracket/15 | json_pp > bracket_20180317.json_
-  
-  
+
+
 **Sources**
 1. https://blog.miguelgrinberg.com/post/designing-a-restful-api-with-python-and-flask
 2. https://github.com/adam-p/markdown-here/wiki/Markdown-Cheatsheet

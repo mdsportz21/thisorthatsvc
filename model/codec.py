@@ -1,5 +1,5 @@
-from model.dto import BracketDTO, RoundDTO, MatchupDTO, TeamDTO
-from model.record import BracketRecord, TeamRecord, RoundRecord, MatchupRecord
+from model.dto import RoundDTO, MatchupDTO, TeamDTO
+from model.record import TeamRecord, RoundRecord, MatchupRecord
 
 
 # I think ObjectId works better as a string, otherwise I keep getting:
@@ -11,28 +11,28 @@ def to_team_dtos(team_records):
     # type: (list[TeamRecord]) -> list[TeamDTO]
     return [to_team_dto(team_record) for team_record in team_records]
 
+
 def to_team_dto(team_record):
     # type: (TeamRecord) -> TeamDTO
     return TeamDTO(teamId=str(team_record._id),
                    name=team_record.name,
                    imgLink=team_record.img_link)
 
-def to_bracket_dto(bracket_record):
-    # type: (BracketRecord) -> BracketDTO
-    return BracketDTO(rounds=to_round_dtos(bracket_record.round_records),
-                      name=bracket_record.name)
 
 def to_round_dtos(round_records):
     # type: (list[RoundRecord]) -> list[RoundDTO]
     return [to_round_dto(round_record) for round_record in round_records]
 
+
 def to_round_dto(round_record):
     # type: (RoundRecord) -> RoundDTO
     return RoundDTO(matchups=to_matchup_dtos(round_record.matchup_records))
 
+
 def to_matchup_dtos(matchup_records):
     # type: (list[MatchupRecord]) -> list[MatchupDTO]
     return [to_matchup_dto(matchup_record) for matchup_record in matchup_records]
+
 
 def to_matchup_dto(matchup_record):
     # type: (MatchupRecord) -> MatchupDTO

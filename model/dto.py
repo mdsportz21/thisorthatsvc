@@ -1,28 +1,22 @@
+from typing import Type
+
+from bson import ObjectId
+
+from model.record import BaseRecord, RoundRecord, MatchupRecord, TeamRecord, BracketFieldRecord
+
+
 class BaseDTO(object):
-    def update(self, **kwargs):
-        self.__dict__.update(kwargs)
-
-class BracketWrapperDTO(BaseDTO):
     """
-    :type bracket: BracketDTO
-    :type teams: list of TeamDTO
     """
 
-    def __init__(self, bracket, teams):
-        self.bracket = bracket
-        self.teams = teams
+    def to_record(self):
+        # type: (BaseDTO) -> BaseRecord
+        raise NotImplementedError
 
-
-class BracketDTO(BaseDTO):
-    """
-    :type rounds: list of RoundDTO
-    :type name: str
-    """
-
-    def __init__(self, rounds, name):
-        # type: (list[RoundDTO], str) -> None
-        self.rounds = rounds
-        self.name = name
+    @classmethod
+    def from_record(cls, record):
+        # type: (Type[BaseDTO], BaseRecord) -> BaseDTO
+        raise NotImplementedError
 
 
 class RoundDTO(BaseDTO):
@@ -31,8 +25,21 @@ class RoundDTO(BaseDTO):
     """
 
     def __init__(self, matchups):
-        # type: (list[MatchupDTO]) -> None
+        # type: (RoundDTO, list[MatchupDTO]) -> None
         self.matchups = matchups
+
+    def to_record(self):
+        # type: (RoundDTO) -> RoundRecord
+        return RoundRecord(
+            matchup_records=[matchup.to_record() for matchup in self.matchups]
+        )
+
+    @classmethod
+    def from_record(cls, record):
+        # type: (Type[RoundDTO], RoundRecord) -> RoundDTO
+        return cls(
+            matchups=[MatchupDTO.from_record(matchup_record) for matchup_record in record.matchup_records]
+        )
 
 
 class MatchupDTO(BaseDTO):
@@ -47,7 +54,7 @@ class MatchupDTO(BaseDTO):
     """
 
     def __init__(self, matchupId, teamOneId, teamTwoId, winnerTeamId, region, sourceMatchupOneId, sourceMatchupTwoId):
-        # type: (str, str, str, str, str, str, str) -> None
+        # type: (MatchupDTO, str, str, str, str, str, str, str) -> None
         self.matchupId = matchupId
         self.teamOneId = teamOneId
         self.teamTwoId = teamTwoId
@@ -56,6 +63,60 @@ class MatchupDTO(BaseDTO):
         self.sourceMatchupOneId = sourceMatchupOneId
         self.sourceMatchupTwoId = sourceMatchupTwoId
 
+    def to_record(self):
+        # type: (MatchupDTO) -> MatchupRecord
+        return MatchupRecord(
+            _id=ObjectId(self.matchupId),
+            team_one_id=ObjectId(self.teamOneId),
+            team_two_id=ObjectId(self.teamTwoId),
+            region=self.region,
+            source_matchup_one_id=ObjectId(self.sourceMatchupOneId),
+            source_matchup_two_id=ObjectId(self.sourceMatchupTwoId)
+        )
+
+    @classmethod
+    def from_record(cls, record):
+        # type: (Type(MatchupDTO), MatchupRecord) -> MatchupDTO
+        return cls(
+            matchupId=str(record.id),
+            teamOneId=str(record.team_one_id),
+            teamTwoId=str(record.team_two_id),
+            winnerTeamId=str(record.winner_team_id),
+            region=record.region,
+            sourceMatchupOneId=str(record.source_matchup_one_id),
+            sourceMatchupTwoId=str(record.source_matchup_two_id)
+        )
+
+
+class BracketFieldDTO(BaseDTO):
+    """
+    :type bracketFieldId: str
+    :type name: str
+    :type teamCount: int
+    """
+
+    def __init__(self, bracketFieldId, name, teamCount):
+        # type: (BracketFieldDTO, str, str, int) -> None
+        self.bracketFieldId = bracketFieldId
+        self.name = name
+        self.teamCount = teamCount
+
+    def to_record(self):
+        # type: (BracketFieldDTO) -> BracketFieldRecord
+        return BracketFieldRecord(
+            _id=ObjectId(self.bracketFieldId),
+            name=self.name
+        )
+
+    @classmethod
+    def from_record(cls, record):
+        # type: (Type[BracketFieldDTO], BracketFieldRecord) -> BracketFieldDTO
+        return cls(
+            bracketFieldId=str(record.id),
+            name=record.name,
+            teamCount=len(record.team_records)
+        )
+
 
 # TeamDTO = TeamRecord + SlotRecord
 class TeamDTO(BaseDTO):
@@ -63,15 +124,30 @@ class TeamDTO(BaseDTO):
     :type teamId: str
     :type name: str
     :type imgLink: str
-    :type seed: str
     """
 
-    def __init__(self, teamId, name, seed=None, imgLink=None):
+    def __init__(self, teamId, name, imgLink=None):
         # type: (str, str, str, str) -> None
         self.name = name
         self.imgLink = imgLink
         self.teamId = teamId
-        self.seed = seed
+
+    def to_record(self):
+        # type: (TeamDTO) -> TeamRecord
+        return TeamRecord(
+            _id=ObjectId(self.teamId),
+            name=self.name,
+            img_link=self.imgLink
+        )
+
+    @classmethod
+    def from_record(cls, record):
+        # type: (Type[TeamDTO], TeamRecord) -> TeamDTO
+        return cls(
+            teamId=str(record.id),
+            name=record.name,
+            imgLink=record.img_link
+        )
 
 
 class DupesDTO(BaseDTO):
@@ -79,6 +155,7 @@ class DupesDTO(BaseDTO):
     :type name: str
     :type teams: list of TeamDTO
     """
+
     def __init__(self, name, teams):
         self.name = name
         self.teams = teams
