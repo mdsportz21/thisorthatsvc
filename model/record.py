@@ -190,13 +190,15 @@ class TeamRecord(BaseRecord):
     :type _name: str
     :type _img_link: str
     :type _grouping: str
+    :type _seed: int
     """
 
-    def __init__(self, _id=None, name=None, img_link=None):
-        # type: (TeamRecord, ObjectId, str, str, str) -> None
+    def __init__(self, _id=None, name=None, img_link=None, seed=None):
+        # type: (TeamRecord, ObjectId, str, str, str, int) -> None
         self._id = _id
         self._name = name
         self._img_link = img_link
+        self._seed = seed
 
     @property
     def id(self):
@@ -222,11 +224,20 @@ class TeamRecord(BaseRecord):
     def img_link(self, value):
         self._img_link = value
 
+    @property
+    def seed(self):
+        return self._seed
+
+    @seed.setter
+    def seed(self, value):
+        self._seed = value
+
     def to_document(self):
         return dict(
             _id=self.id,
             name=self.name,
-            img_link=self.img_link
+            img_link=self.img_link,
+            seed=self.seed
         )
 
     @classmethod
@@ -234,7 +245,8 @@ class TeamRecord(BaseRecord):
         return cls(
             _id=doc['_id'],
             name=doc['name'],
-            img_link=doc['img_link']
+            img_link=doc['img_link'],
+            seed=doc['seed']
         )
 
     # def get_values(self):
@@ -257,7 +269,7 @@ class BracketFieldRecord(BaseRecord):
     """
 
     def __init__(self, _id, name, team_records):
-        # type (BracketFieldRecord, ObjectId, str, list[TeamRecord]) -> None
+        # type: (BracketFieldRecord, ObjectId, str, list[TeamRecord]) -> None
         self._id = _id
         self._name = name
         self._team_records = team_records
@@ -311,13 +323,15 @@ class BracketInstanceRecord(BaseRecord):
     :type _id: ObjectId
     :type _round_records: list of RoundRecord
     :type _bracket_field_id: ObjectId
+    :type _user: str
     """
 
-    def __init__(self, _id, round_records, bracket_field_id):
+    def __init__(self, _id, round_records, bracket_field_id, user):
         # type: (ObjectId, list[RoundRecord], ObjectId) -> None
         self._id = _id
         self._round_records = round_records
         self._bracket_field_id = bracket_field_id
+        self._user = user
 
     @property
     def id(self):
@@ -343,6 +357,14 @@ class BracketInstanceRecord(BaseRecord):
     def bracket_field_id(self, value):
         self._bracket_field_id = value
 
+    @property
+    def user(self):
+        return self._user
+
+    @user.setter
+    def user(self, value):
+        self._user = value
+
     # def get_values(self):
     #     return (self.id, self.round_records, self.bracket_field_id)
 
@@ -350,7 +372,8 @@ class BracketInstanceRecord(BaseRecord):
         return dict(
             _id=self.id,
             round_records=[round_record.to_document() for round_record in self.round_records],
-            bracket_field_id=self.bracket_field_id
+            bracket_field_id=self.bracket_field_id,
+            user=self.user
         )
 
     @classmethod
@@ -358,5 +381,6 @@ class BracketInstanceRecord(BaseRecord):
         return cls(
             _id=doc['_id'],
             round_records=[RoundRecord.from_document(round_document) for round_document in doc['round_records']],
-            bracket_field_id=doc['bracket_field_id']
+            bracket_field_id=doc['bracket_field_id'],
+            user=doc['user']
         )

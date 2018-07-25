@@ -6,8 +6,10 @@ from bson.json_util import dumps
 from flask import Flask, jsonify, make_response, request, abort
 from flask_cors import CORS
 from flask_pymongo import PyMongo
+from werkzeug.local import LocalProxy
 
 import scraper
+from bracket import SeedingStrategy, BracketController
 from db.storage import TeamDAO, BracketDAO
 from model import codec
 from model.dto import DupesDTO, BracketFieldDTO
@@ -28,6 +30,7 @@ with app.app_context():
     bracket_repository = BracketRepository(pymongo)
     team_dao = TeamDAO(pymongo)
     bracket_dao = BracketDAO(pymongo)
+    bracket_controller = BracketController(pymongo)
 
 
 @app.route('/', methods=['GET'])
@@ -70,7 +73,22 @@ def get_bracket_fields():
 # params include bracket name (required), authenticated user, and seed order (random or by user's previous results)
 # raise error if user is not authenticated to create a bracket instance for this user
 @app.route('/api/bracket', methods=['POST'])
-def create_bracket_instance(bracket_params):
+def create_bracket_instance():
+    validate_post(request, ['user', 'seedingStrategy', 'bracketFieldId'])
+
+    # user to create bracket for
+    user = request.json['user']
+
+    # random or by user's ranking (if the user has no history, default to random)
+    seeding_strategy = SeedingStrategy[request.json['seedingStrategy'].upper()]
+
+    # id of bracket field to create bracket instance from
+    bracket_field_id = ObjectId(request.json['bracketFieldId'])
+
+    bracket_instance = bracket_controller.generate_bracket_instance(bracket_field_id, seeding_strategy, user)
+
+
+
     raise NotImplementedError
 
 
@@ -92,13 +110,7 @@ def save_bracket_results():
 # for dev purposes only
 @app.route('/api/dupes', methods=['POST'])
 def save_dupes():
-    if not request.json:
-        abort(400, {'message': 'json required in request'})
-    if 'teamIds' not in request.json:
-        abort(400, {'message': 'teamIds required in request'})
-    if 'name' not in request.json:
-        abort(400, {'message': 'team_ids required in request'})
-
+    validate_post(request, ['teamIds', 'name'])
     name = request.json['name']
     team_ids = [ObjectId(team_id) for team_id in request.json['teamIds']]
 
@@ -106,6 +118,15 @@ def save_dupes():
 
     # return ok
     return dumps({'resultsSaved': True}), 200
+
+
+def validate_post(request, required_props):
+    # type: (LocalProxy, list[str]) -> None
+    if not request.json:
+        abort(400, {'message': 'json required in request'})
+    for prop in required_props:
+        if prop not in request.json:
+            abort(400, {'message': '{} required in request'.format(prop)})
 
 
 # for dev purposes only

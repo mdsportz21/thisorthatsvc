@@ -21,6 +21,10 @@ class BracketRepository(object):
         # type: (BracketRepository) -> List[BracketFieldRecord]
         return [BracketFieldRecord.from_document(doc) for doc in self.bracket_dao.get_all_bracket_field_documents()]
 
+    def fetch_bracket_field_by_id(self, bracket_field_id):
+        # type: (BracketRepository, ObjectId) -> BracketFieldRecord
+        return self.bracket_dao.fetch_bracket_field_by_id(bracket_field_id)
+
     # def store_bracket(self, bracket_record):
     #     # type -> (BracketRecord) -> (BracketRecord)
     #     return self.bracket_dao.store_bracket(bracket_record)

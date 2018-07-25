@@ -25,6 +25,10 @@ class BracketDAO(object):
         # type: (BracketDAO) -> List[dict]
         return self.pymongo.db.bracket_fields.find()
 
+    def fetch_bracket_field_by_id(self, bracket_field_id):
+        # type: (BracketDAO, ObjectId) -> BracketFieldRecord
+        return self.pymongo.db.bracket_fields.find({'_id': bracket_field_id})
+
     # def store_bracket(self, bracket_record):
     #     # type: (BracketRecord) -> BracketRecord
     #     updated_record = self.pymongo.db.brackets.find_one_and_replace({'_id': bracket_record.id},
