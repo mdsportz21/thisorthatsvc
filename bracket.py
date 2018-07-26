@@ -1,7 +1,7 @@
 from enum import Enum
 from math import floor, log
 from random import shuffle
-from typing import List
+from typing import List, Tuple
 
 from bson import ObjectId
 
@@ -18,9 +18,8 @@ class BracketController(object):
     def __init__(self, pymongo):
         self.bracket_repository = BracketRepository(pymongo)
 
-    def generate_bracket_instance(self, bracket_field_id, seeding_strategy, user):
-        # type: (BracketController, ObjectId, SeedingStrategy, str) -> None
-
+    def generate_bracket_instance(self, bracket_field_id: ObjectId, seeding_strategy: SeedingStrategy,
+                                  user: str) -> BracketInstanceRecord:
         # fetch bracket field from DB
         bracket_field_record = self.bracket_repository.fetch_bracket_field_by_id(bracket_field_id)
 
@@ -29,6 +28,8 @@ class BracketController(object):
                                                                            seeding_strategy,
                                                                            bracket_field_id,
                                                                            user)
+
+        return bracket_instance_record
 
 
 class BracketFactory(object):
@@ -66,13 +67,12 @@ class BracketFactory(object):
         # type: (tuple[TeamRecord], int) -> RoundRecord
         matchup_records = []  # type: list[MatchupRecord]
         team_records = list(team_records_final)
-        num_teams = len(team_records)
 
         # the play-in round should only have the last num_play_in_games * 2 teams in it
-        play_in_index = BracketFactory.get_last_team_bye_index(num_teams, num_play_in_games)
+        play_in_index = BracketFactory.get_last_team_bye_index(len(team_records), num_play_in_games)
 
         # match the team at play_in_index against the last seeded team remaining
-        while play_in_index < num_teams - 1:
+        while play_in_index < len(team_records) - 1:
             team_one = team_records.pop(play_in_index)
             team_two = team_records.pop()
             matchup_record = MatchupRecord(
@@ -104,7 +104,7 @@ class BracketFactory(object):
 
         matchup_records: List[MatchupRecord] = []
 
-        while not unassigned_team_records or not play_in_matchup_records:
+        while unassigned_team_records or play_in_matchup_records:
             team_one_id = None
             team_two_id = None
             source_matchup_one_id = None
@@ -151,6 +151,7 @@ class BracketFactory(object):
                 source_matchup_one_id=source_matchup_one_id,
                 source_matchup_two_id=source_matchup_two_id
             )
+            matchup_records.append(matchup_record)
 
         round_record = BracketFactory.validate_non_play_in_round(matchup_records)
         return round_record
@@ -162,7 +163,7 @@ class BracketFactory(object):
         return RoundRecord(matchup_records)
 
     @staticmethod
-    def create_next_round(prev_round_matchup_records: tuple[MatchupRecord]) -> RoundRecord:
+    def create_next_round(prev_round_matchup_records: Tuple[MatchupRecord]) -> RoundRecord:
         prev_round_matchup_record_iter = iter(prev_round_matchup_records)
         matchup_records = []
         for prev_round_matchup_one in prev_round_matchup_record_iter:

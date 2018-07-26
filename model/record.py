@@ -1,11 +1,9 @@
+from typing import List, Dict
+
 from bson.objectid import ObjectId
 
 
 class BaseRecord(object):
-    # i don't remember why this is needed
-    def get_values(self) -> tuple:
-        raise NotImplementedError
-
     def __eq__(self, other):
         return self.get_values() == other.get_values()
 
@@ -15,8 +13,7 @@ class BaseRecord(object):
     def __str__(self):
         return ','.join((str(value) for value in self.get_values()))
 
-    def to_document(self):
-        # type: () -> dict
+    def to_document(self) -> Dict:
         raise NotImplementedError
 
     @classmethod
@@ -25,69 +22,22 @@ class BaseRecord(object):
         raise NotImplementedError
 
 
-class RoundRecord(BaseRecord):
-    """ Round of a bracket instance
-    :type matchup_records: list of MatchupRecord
-    """
-
-    def __init__(self, matchup_records):
-        # type: (list[MatchupRecord]) -> None
-        self._matchup_records = matchup_records
-
-    @property
-    def matchup_records(self):
-        return self._matchup_records
-
-    @matchup_records.setter
-    def matchup_records(self, value):
-        self._matchup_records = value
-
-    def to_document(self):
-        return dict(
-            matchup_records=[matchup_record.to_document() for matchup_record in self.matchup_records]
-        )
-
-    @classmethod
-    def from_document(cls, doc):
-        return cls(
-            matchup_records=[MatchupRecord.from_document(matchup_document) for matchup_document in
-                             doc['matchup_records']]
-        )
-
-    # def get_values(self):
-    #     return (self.matchup_records)
-    #
-    # @staticmethod
-    # def factory(round_dict):
-    #     # type: (dict) -> RoundRecord
-    #     round_record = RoundRecord(matchup_records=[])
-    #     round_record.update(**round_dict)
-    #     matchup_records = []
-    #     for matchup_dict in round_record.matchup_records:
-    #         matchup_records.append(MatchupRecord.factory(matchup_dict))
-    #     round_record.matchup_records = matchup_records
-    #     return round_record
-
-
 class MatchupRecord(BaseRecord):
     """ Matchup in a bracket instance
     :type _id: ObjectId
     :type _team_one_id: ObjectId
     :type _team_two_id: ObjectId
-    :type _region: str
     :type _source_matchup_one_id: ObjectId
     :type _source_matchup_two_id: ObjectId
     :type _winner_team_id: ObjectId
     """
 
-    def __init__(self, _id=None, team_one_id=None, team_two_id=None, region=None,
-                 source_matchup_one_id=None,
+    def __init__(self, _id=None, team_one_id=None, team_two_id=None, source_matchup_one_id=None,
                  source_matchup_two_id=None, winner_team_id=None):
         # type: (ObjectId, ObjectId, ObjectId, str, ObjectId, ObjectId, ObjectId) -> None
         self._id = _id
         self._team_one_id = team_one_id
         self._team_two_id = team_two_id
-        self._region = region
         self._source_matchup_one_id = source_matchup_one_id
         self._source_matchup_two_id = source_matchup_two_id
         self._winner_team_id = winner_team_id
@@ -115,14 +65,6 @@ class MatchupRecord(BaseRecord):
     @team_two_id.setter
     def team_two_id(self, value):
         self._team_two_id = value
-
-    @property
-    def region(self):
-        return self._region
-
-    @region.setter
-    def region(self, value):
-        self._region = value
 
     @property
     def source_matchup_one_id(self):
@@ -153,7 +95,6 @@ class MatchupRecord(BaseRecord):
             _id=self.id,
             team_one_id=self.team_one_id,
             team_two_id=self.team_two_id,
-            region=self.region,
             source_matchup_one_id=self.source_matchup_one_id,
             source_matchup_two_id=self.source_matchup_two_id,
             winner_team_id=self.winner_team_id
@@ -165,23 +106,39 @@ class MatchupRecord(BaseRecord):
             _id=doc['_id'],
             team_one_id=doc['team_one_id'],
             team_two_id=doc['team_two_id'],
-            region=doc['region'],
             source_matchup_one_id=doc['source_matchup_one_id'],
             source_matchup_two_id=doc['source_matchup_two_id'],
             winner_team_id=doc['winner_team_id']
         )
 
-    # def get_values(self):
-    #     # type: (MatchupRecord) -> (ObjectId, ObjectId, ObjectId, str, ObjectId, ObjectId)
-    #     return (self.id, self.team_one_id, self.team_two_id, self.region, self.source_matchup_one_id,
-    #             self.source_matchup_two_id)
-    #
-    # @staticmethod
-    # def factory(matchup_record_dict):
-    #     # type: (dict) -> MatchupRecord
-    #     matchup_record = MatchupRecord()
-    #     matchup_record.update(**matchup_record_dict)
-    #     return matchup_record
+
+class RoundRecord(BaseRecord):
+    """ Round of a bracket instance
+    :type matchup_records: list of MatchupRecord
+    """
+
+    def __init__(self, matchup_records: List[MatchupRecord]) -> None:
+        self._matchup_records = matchup_records
+
+    @property
+    def matchup_records(self):
+        return self._matchup_records
+
+    @matchup_records.setter
+    def matchup_records(self, value):
+        self._matchup_records = value
+
+    def to_document(self):
+        return dict(
+            matchup_records=[matchup_record.to_document() for matchup_record in self.matchup_records]
+        )
+
+    @classmethod
+    def from_document(cls, doc):
+        return cls(
+            matchup_records=[MatchupRecord.from_document(matchup_document) for matchup_document in
+                             doc['matchup_records']]
+        )
 
 
 class TeamRecord(BaseRecord):
@@ -242,23 +199,13 @@ class TeamRecord(BaseRecord):
 
     @classmethod
     def from_document(cls, doc):
+        seed = doc['seed'] if 'seed' in doc else None
         return cls(
             _id=doc['_id'],
             name=doc['name'],
             img_link=doc['img_link'],
-            seed=doc['seed']
+            seed=seed
         )
-
-    # def get_values(self):
-    #     # type: (TeamRecord) -> (ObjectId, str, str, str)
-    #     return (self._id, self._name, self._img_link, self._grouping)
-
-    # @staticmethod
-    # def factory(team_record_dict):
-    #     # type: (dict) -> TeamRecord
-    #     team_record = TeamRecord()
-    #     team_record.update(**team_record_dict)
-    #     return team_record
 
 
 class BracketFieldRecord(BaseRecord):
@@ -313,9 +260,6 @@ class BracketFieldRecord(BaseRecord):
             team_records=[TeamRecord.from_document(team_document) for team_document in doc['team_records']]
         )
 
-    # def get_values(self) -> tuple:
-    #     return (self.id, self.team_records)
-
 
 class BracketInstanceRecord(BaseRecord):
     """ a user’s attempt at filling out a bracket
@@ -326,7 +270,7 @@ class BracketInstanceRecord(BaseRecord):
     :type _user: str
     """
 
-    def __init__(self, _id, round_records, bracket_field_id, user):
+    def __init__(self, _id, round_records, bracket_field_id=None, user=None):
         # type: (ObjectId, list[RoundRecord], ObjectId) -> None
         self._id = _id
         self._round_records = round_records
@@ -364,9 +308,6 @@ class BracketInstanceRecord(BaseRecord):
     @user.setter
     def user(self, value):
         self._user = value
-
-    # def get_values(self):
-    #     return (self.id, self.round_records, self.bracket_field_id)
 
     def to_document(self):
         return dict(

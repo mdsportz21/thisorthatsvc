@@ -4,7 +4,7 @@ from bson import ObjectId
 from flask_pymongo import PyMongo
 from pymongo import ReturnDocument, UpdateMany
 
-from model.record import TeamRecord, BracketFieldRecord
+from model.record import TeamRecord, BracketFieldRecord, BracketInstanceRecord
 
 
 class BracketDAO(object):
@@ -25,21 +25,14 @@ class BracketDAO(object):
         # type: (BracketDAO) -> List[dict]
         return self.pymongo.db.bracket_fields.find()
 
-    def fetch_bracket_field_by_id(self, bracket_field_id):
-        # type: (BracketDAO, ObjectId) -> BracketFieldRecord
-        return self.pymongo.db.bracket_fields.find({'_id': bracket_field_id})
+    def fetch_bracket_field_by_id(self, bracket_field_id: ObjectId) -> dict:
+        return self.pymongo.db.bracket_fields.find_one({'_id': bracket_field_id})
 
-    # def store_bracket(self, bracket_record):
-    #     # type: (BracketRecord) -> BracketRecord
-    #     updated_record = self.pymongo.db.brackets.find_one_and_replace({'_id': bracket_record.id},
-    #                                                                    to_dict(bracket_record),
-    #                                                                    upsert=True,
-    #                                                                    return_document=ReturnDocument.AFTER)
-    #     bracket_record.id = updated_record['_id']
-    #     return bracket_record
-    #
-    # def get_bracket(self, name):
-    #     return self.pymongo.db.brackets.find_one({'_name': name})
+    def store_bracket_instance(self, bracket_instance_record: BracketInstanceRecord) -> None:
+        self.pymongo.db.bracket_instances.find_one_and_replace(filter={'_id': bracket_instance_record.id},
+                                                               replacement=bracket_instance_record.to_document(),
+                                                               upsert=True,
+                                                               return_document=ReturnDocument.AFTER)
 
 
 class TeamDAO(object):

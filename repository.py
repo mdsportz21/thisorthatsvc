@@ -5,15 +5,14 @@ from bson import ObjectId
 from db.storage import TeamDAO, BracketDAO
 from model import codec
 from model.dto import TeamDTO
-from model.record import TeamRecord, BracketFieldRecord
+from model.record import TeamRecord, BracketFieldRecord, BracketInstanceRecord
 
 
 class BracketRepository(object):
     def __init__(self, pymongo):
         self.bracket_dao = BracketDAO(pymongo)
 
-    def create_bracket_field(self, bracket_field_name, team_records):
-        # type (str, list[TeamRecord]) -> None
+    def create_bracket_field(self, bracket_field_name: str, team_records: List[TeamRecord]) -> None:
         bracket_field_record = BracketFieldRecord(_id=ObjectId(), name=bracket_field_name, team_records=team_records)
         self.bracket_dao.store_bracket_field(bracket_field_record)
 
@@ -21,20 +20,12 @@ class BracketRepository(object):
         # type: (BracketRepository) -> List[BracketFieldRecord]
         return [BracketFieldRecord.from_document(doc) for doc in self.bracket_dao.get_all_bracket_field_documents()]
 
-    def fetch_bracket_field_by_id(self, bracket_field_id):
-        # type: (BracketRepository, ObjectId) -> BracketFieldRecord
-        return self.bracket_dao.fetch_bracket_field_by_id(bracket_field_id)
+    def fetch_bracket_field_by_id(self, bracket_field_id: ObjectId) -> BracketFieldRecord:
+        bracket_field_document = self.bracket_dao.fetch_bracket_field_by_id(bracket_field_id)
+        return BracketFieldRecord.from_document(bracket_field_document)
 
-    # def store_bracket(self, bracket_record):
-    #     # type -> (BracketRecord) -> (BracketRecord)
-    #     return self.bracket_dao.store_bracket(bracket_record)
-    #
-    # def get_bracket(self, name):
-    #     bracket_dict = self.bracket_dao.get_bracket(name)
-    #     return BracketRecord.factory(bracket_dict) if bracket_dict is not None else None
-    #
-    # def has_bracket(self, name):
-    #     return self.bracket_dao.get_bracket(name) is not None
+    def store_bracket_instance(self, bracket_instance_record: BracketInstanceRecord) -> None:
+        self.bracket_dao.store_bracket_instance(bracket_instance_record)
 
 
 class TeamRepository(object):

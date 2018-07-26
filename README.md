@@ -261,10 +261,14 @@ _$ curl http://localhost:5000/api/bracket/hatz | json_pp_
 _$ curl http://localhost:5000/api/subjects | json_pp_
 _$ curl http://localhost:5000/api/ranking | json_pp_  
 _$ curl http://localhost:5000/api/scrape -X POST_   
-_$ curl http://localhost:5000/api/import -X POST_  
+_$ curl http://localhost:5000/api/import -X POST_
+
+Get a list of brackets
+_$ curl http://localhost:5000/api/bracket | json_pp_
 
 Create Bracket
-_$ curl -H "Content-Type: application/json" -X POST -d '{"name": "15"}' http://localhost:5000/api/bracket_  
+_$ curl -H "Content-Type: application/json" -X POST -d '{"name": "15"}' http://localhost:5000/api/bracket_
+_$ curl -H "Content-Type: application/json" -X POST -d '{"user": "tim", "seedingStrategy": "random", "bracketFieldId":"5b552322d6f45f189b117fbf"}' http://localhost:5000/api/bracket_
 
 Get Bracket
 _$ curl http://localhost:5000/api/bracket/15 | json_pp > bracket_20180317.json_

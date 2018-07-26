@@ -8,11 +8,9 @@ from flask_cors import CORS
 from flask_pymongo import PyMongo
 from werkzeug.local import LocalProxy
 
-import scraper
 from bracket import SeedingStrategy, BracketController
-from db.storage import TeamDAO, BracketDAO
 from model import codec
-from model.dto import DupesDTO, BracketFieldDTO
+from model.dto import DupesDTO, BracketFieldDTO, BracketInstanceDTO
 from repository import TeamRepository, BracketRepository
 from util import to_json
 
@@ -28,8 +26,6 @@ with app.app_context():
     pymongo = PyMongo(app)
     team_repository = TeamRepository(pymongo)
     bracket_repository = BracketRepository(pymongo)
-    team_dao = TeamDAO(pymongo)
-    bracket_dao = BracketDAO(pymongo)
     bracket_controller = BracketController(pymongo)
 
 
@@ -53,11 +49,11 @@ def create_bracket_field():
 
 
 # for dev purposes
-@app.route('/api/import', methods=['POST'])
-def import_teams():
-    team_records = scraper.get_teams_from_files()
-    team_dao.store_team_records(team_records)
-    return dumps({'importSuccessful': True}), 200
+# @app.route('/api/import', methods=['POST'])
+# def import_teams():
+#     team_records = scraper.get_teams_from_files()
+#     team_dao.store_team_records(team_records)
+#     return dumps({'importSuccessful': True}), 200
 
 
 # retrieve a list of available brackets
@@ -85,11 +81,17 @@ def create_bracket_instance():
     # id of bracket field to create bracket instance from
     bracket_field_id = ObjectId(request.json['bracketFieldId'])
 
-    bracket_instance = bracket_controller.generate_bracket_instance(bracket_field_id, seeding_strategy, user)
+    # generate a new bracket instance
+    bracket_instance_record = bracket_controller.generate_bracket_instance(bracket_field_id, seeding_strategy, user)
 
+    # store bracket instance
+    bracket_repository.store_bracket_instance(bracket_instance_record)
 
+    # translate record to DTO
+    bracket_instance_dto = BracketInstanceDTO.from_record(bracket_instance_record)
 
-    raise NotImplementedError
+    # send response
+    return jsonify(bracketInstance=bracket_instance_dto.to_dict())
 
 
 # get a bracket instance by bracket id

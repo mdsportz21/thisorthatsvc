@@ -1,8 +1,8 @@
-from typing import Type
+from typing import Type, List
 
 from bson import ObjectId
 
-from model.record import BaseRecord, RoundRecord, MatchupRecord, TeamRecord, BracketFieldRecord
+from model.record import BaseRecord, RoundRecord, MatchupRecord, TeamRecord, BracketFieldRecord, BracketInstanceRecord
 
 
 class BaseDTO(object):
@@ -16,6 +16,9 @@ class BaseDTO(object):
     @classmethod
     def from_record(cls, record):
         # type: (Type[BaseDTO], BaseRecord) -> BaseDTO
+        raise NotImplementedError
+
+    def to_dict(self) -> dict:
         raise NotImplementedError
 
 
@@ -35,10 +38,44 @@ class RoundDTO(BaseDTO):
         )
 
     @classmethod
-    def from_record(cls, record):
-        # type: (Type[RoundDTO], RoundRecord) -> RoundDTO
+    def from_record(cls, record: RoundRecord) -> 'RoundDTO':
         return cls(
             matchups=[MatchupDTO.from_record(matchup_record) for matchup_record in record.matchup_records]
+        )
+
+    def to_dict(self) -> dict:
+        return dict(
+            matchups=[matchup.to_dict() for matchup in self.matchups]
+        )
+
+
+class BracketInstanceDTO(BaseDTO):
+    """
+    :type rounds: list of RoundDTO
+    :type bracketFieldId: str
+    """
+
+    def __init__(self, rounds: List[RoundDTO], bracketFieldId: str) -> None:
+        self.rounds = rounds
+        self.bracketFieldId = bracketFieldId
+
+    def to_record(self) -> BracketInstanceRecord:
+        return BracketInstanceRecord(
+            _id=ObjectId(self.bracketFieldId),
+            round_records=[round.to_record() for round in self.rounds]
+        )
+
+    @classmethod
+    def from_record(cls, record: BracketInstanceRecord) -> 'BracketInstanceDTO':
+        return cls(
+            rounds=[RoundDTO.from_record(round_record) for round_record in record.round_records],
+            bracketFieldId=str(record.bracket_field_id)
+        )
+
+    def to_dict(self) -> dict:
+        return dict(
+            rounds=[round.to_dict() for round in self.rounds],
+            bracketFieldId=self.bracketFieldId
         )
 
 
@@ -48,18 +85,17 @@ class MatchupDTO(BaseDTO):
     :type teamOneId: str
     :type teamTwoId: str
     :type winnerTeamId: str
-    :type region: str
     :type sourceMatchupOneId: str
     :type sourceMatchupTwoId: str
     """
 
-    def __init__(self, matchupId, teamOneId, teamTwoId, winnerTeamId, region, sourceMatchupOneId, sourceMatchupTwoId):
+    def __init__(self, matchupId: str, teamOneId: str, teamTwoId: str, winnerTeamId: str, sourceMatchupOneId: str,
+                 sourceMatchupTwoId: str):
         # type: (MatchupDTO, str, str, str, str, str, str, str) -> None
         self.matchupId = matchupId
         self.teamOneId = teamOneId
         self.teamTwoId = teamTwoId
         self.winnerTeamId = winnerTeamId
-        self.region = region
         self.sourceMatchupOneId = sourceMatchupOneId
         self.sourceMatchupTwoId = sourceMatchupTwoId
 
@@ -69,7 +105,6 @@ class MatchupDTO(BaseDTO):
             _id=ObjectId(self.matchupId),
             team_one_id=ObjectId(self.teamOneId),
             team_two_id=ObjectId(self.teamTwoId),
-            region=self.region,
             source_matchup_one_id=ObjectId(self.sourceMatchupOneId),
             source_matchup_two_id=ObjectId(self.sourceMatchupTwoId)
         )
@@ -82,9 +117,18 @@ class MatchupDTO(BaseDTO):
             teamOneId=str(record.team_one_id),
             teamTwoId=str(record.team_two_id),
             winnerTeamId=str(record.winner_team_id),
-            region=record.region,
             sourceMatchupOneId=str(record.source_matchup_one_id),
             sourceMatchupTwoId=str(record.source_matchup_two_id)
+        )
+
+    def to_dict(self) -> dict:
+        return dict(
+            matchupId=self.matchupId,
+            teamOneId=self.teamOneId,
+            teamTwoId=self.teamTwoId,
+            winnerTeamId=self.winnerTeamId,
+            sourceMatchupOneId=self.sourceMatchupOneId,
+            sourceMatchupTwoId=self.sourceMatchupTwoId
         )
 
 
@@ -117,6 +161,13 @@ class BracketFieldDTO(BaseDTO):
             teamCount=len(record.team_records)
         )
 
+    def to_dict(self) -> dict:
+        return dict(
+            bracketFieldId=self.bracketFieldId,
+            name=self.name,
+            teamCount=self.teamCount
+        )
+
 
 # TeamDTO = TeamRecord + SlotRecord
 class TeamDTO(BaseDTO):
@@ -147,6 +198,13 @@ class TeamDTO(BaseDTO):
             teamId=str(record.id),
             name=record.name,
             imgLink=record.img_link
+        )
+
+    def to_dict(self) -> dict:
+        return dict(
+            name=self.name,
+            imgLink=self.imgLink,
+            teamId=self.teamId
         )
 
 
