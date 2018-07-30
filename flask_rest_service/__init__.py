@@ -12,6 +12,7 @@ from bracket import SeedingStrategy, BracketController
 from model import codec
 from model.dto import DupesDTO, BracketFieldDTO, BracketInstanceDTO
 from repository import TeamRepository, BracketRepository
+from resource import CreateBracketInstanceResponse
 from util import to_json
 
 MONGO_URL = os.environ.get('MONGO_URL')
@@ -89,6 +90,9 @@ def create_bracket_instance():
 
     # translate record to DTO
     bracket_instance_dto = BracketInstanceDTO.from_record(bracket_instance_record)
+
+    # TODO: get teams
+    create_bracket_instance_response = CreateBracketInstanceResponse(bracket_instance_dto, teams)
 
     # send response
     return jsonify(bracketInstance=bracket_instance_dto.to_dict())

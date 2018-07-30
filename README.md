@@ -247,6 +247,10 @@ _$ flask/bin/pip install Flask-PyMongo_
 _$ flask/bin/pip install pytest-mock_  
 _$ flask/bin/pip install -U pytest_  
 
+**Setup 2**
+_$pip install -r requirements.txt
+
+
 **Run**  
 _$ ./app.py_  
 
