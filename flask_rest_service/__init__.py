@@ -8,11 +8,11 @@ from flask_cors import CORS
 from flask_pymongo import PyMongo
 from werkzeug.local import LocalProxy
 
-from bracket import SeedingStrategy, BracketController
+from bracket import SeedingStrategy
+from flask_rest_service.resource import BracketResource
 from model import codec
-from model.dto import DupesDTO, BracketFieldDTO, BracketInstanceDTO
+from model.dto import DupesDTO, BracketFieldDTO
 from repository import TeamRepository, BracketRepository
-from resource import CreateBracketInstanceResponse
 from util import to_json
 
 MONGO_URL = os.environ.get('MONGO_URL')
@@ -27,7 +27,7 @@ with app.app_context():
     pymongo = PyMongo(app)
     team_repository = TeamRepository(pymongo)
     bracket_repository = BracketRepository(pymongo)
-    bracket_controller = BracketController(pymongo)
+    bracket_resource = BracketResource(pymongo)
 
 
 @app.route('/', methods=['GET'])
@@ -83,19 +83,11 @@ def create_bracket_instance():
     bracket_field_id = ObjectId(request.json['bracketFieldId'])
 
     # generate a new bracket instance
-    bracket_instance_record = bracket_controller.generate_bracket_instance(bracket_field_id, seeding_strategy, user)
-
-    # store bracket instance
-    bracket_repository.store_bracket_instance(bracket_instance_record)
-
-    # translate record to DTO
-    bracket_instance_dto = BracketInstanceDTO.from_record(bracket_instance_record)
-
-    # TODO: get teams
-    create_bracket_instance_response = CreateBracketInstanceResponse(bracket_instance_dto, teams)
+    bracket_instance_response = bracket_resource.create_and_store_bracket_instance(bracket_field_id, seeding_strategy,
+                                                                                 user)
 
     # send response
-    return jsonify(bracketInstance=bracket_instance_dto.to_dict())
+    return jsonify(bracketInstance=bracket_instance_response.to_dict())
 
 
 # get a bracket instance by bracket id

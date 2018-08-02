@@ -5,7 +5,7 @@ from typing import List, Tuple
 
 from bson import ObjectId
 
-from model.record import TeamRecord, BracketInstanceRecord, RoundRecord, MatchupRecord
+from model.record import TeamRecord, BracketInstanceRecord, RoundRecord, MatchupRecord, BracketFieldRecord
 from repository import BracketRepository
 
 
@@ -14,20 +14,26 @@ class SeedingStrategy(Enum):
     USER = 2
 
 
+
 class BracketController(object):
     def __init__(self, pymongo):
         self.bracket_repository = BracketRepository(pymongo)
 
-    def generate_bracket_instance(self, bracket_field_id: ObjectId, seeding_strategy: SeedingStrategy,
-                                  user: str) -> BracketInstanceRecord:
-        # fetch bracket field from DB
-        bracket_field_record = self.bracket_repository.fetch_bracket_field_by_id(bracket_field_id)
+    def get_bracket_field(self, bracket_field_id: ObjectId) -> BracketFieldRecord:
+        return self.bracket_repository.fetch_bracket_field_by_id(bracket_field_id)
+
+
+    def generate_and_store_bracket_instance(self, bracket_field_record: BracketFieldRecord, seeding_strategy: SeedingStrategy,
+                                            user: str) -> BracketInstanceRecord:
 
         # generate the bracket from the field teams
         bracket_instance_record = BracketFactory.generate_bracket_instance(bracket_field_record.team_records,
                                                                            seeding_strategy,
-                                                                           bracket_field_id,
+                                                                           bracket_field_record.id,
                                                                            user)
+
+        # store bracket instance
+        self.bracket_repository.store_bracket_instance(bracket_instance_record)
 
         return bracket_instance_record
 
