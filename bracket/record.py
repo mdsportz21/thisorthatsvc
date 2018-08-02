@@ -1,28 +1,11 @@
-from typing import List, Dict
+from typing import List, Optional, Dict
 
-from bson.objectid import ObjectId
+from bson import ObjectId
 
-
-class BaseRecord(object):
-    def __eq__(self, other):
-        return self.get_values() == other.get_values()
-
-    def __hash__(self):
-        return hash(self.get_values())
-
-    def __str__(self):
-        return ','.join((str(value) for value in self.get_values()))
-
-    def to_document(self) -> Dict:
-        raise NotImplementedError
-
-    @classmethod
-    def from_document(cls, doc):
-        # type: (dict) -> cls
-        raise NotImplementedError
+import base
 
 
-class MatchupRecord(BaseRecord):
+class Matchup(base.Record):
     """ Matchup in a bracket instance
     :type _id: ObjectId
     :type _team_one_id: ObjectId
@@ -32,9 +15,9 @@ class MatchupRecord(BaseRecord):
     :type _winner_team_id: ObjectId
     """
 
-    def __init__(self, _id=None, team_one_id=None, team_two_id=None, source_matchup_one_id=None,
-                 source_matchup_two_id=None, winner_team_id=None):
-        # type: (ObjectId, ObjectId, ObjectId, str, ObjectId, ObjectId, ObjectId) -> None
+    def __init__(self, _id: ObjectId, team_one_id: Optional[ObjectId], team_two_id: Optional[ObjectId],
+                 source_matchup_one_id: Optional[ObjectId], source_matchup_two_id: Optional[ObjectId],
+                 winner_team_id: Optional[ObjectId]) -> None:
         self._id = _id
         self._team_one_id = team_one_id
         self._team_two_id = team_two_id
@@ -90,7 +73,7 @@ class MatchupRecord(BaseRecord):
     def winner_team_id(self, value):
         self._winner_team_id = value
 
-    def to_document(self):
+    def to_document(self) -> Dict:
         return dict(
             _id=self.id,
             team_one_id=self.team_one_id,
@@ -101,7 +84,7 @@ class MatchupRecord(BaseRecord):
         )
 
     @classmethod
-    def from_document(cls, doc):
+    def from_document(cls, doc) -> 'Matchup':
         return cls(
             _id=doc['_id'],
             team_one_id=doc['team_one_id'],
@@ -112,50 +95,46 @@ class MatchupRecord(BaseRecord):
         )
 
 
-class RoundRecord(BaseRecord):
+class Round(base.Record):
     """ Round of a bracket instance
-    :type matchup_records: list of MatchupRecord
+    :type matchups: list of Matchup
     """
 
-    def __init__(self, matchup_records: List[MatchupRecord]) -> None:
-        self._matchup_records = matchup_records
+    def __init__(self, matchups: List[Matchup]) -> None:
+        self._matchups = matchups
 
     @property
-    def matchup_records(self):
-        return self._matchup_records
+    def matchups(self):
+        return self._matchups
 
-    @matchup_records.setter
-    def matchup_records(self, value):
-        self._matchup_records = value
+    @matchups.setter
+    def matchups(self, value):
+        self._matchups = value
 
-    def to_document(self):
+    def to_document(self) -> Dict:
         return dict(
-            matchup_records=[matchup_record.to_document() for matchup_record in self.matchup_records]
+            matchups=[matchup.to_document() for matchup in self.matchups]
         )
 
     @classmethod
-    def from_document(cls, doc):
+    def from_document(cls, doc) -> 'Round':
         return cls(
-            matchup_records=[MatchupRecord.from_document(matchup_document) for matchup_document in
-                             doc['matchup_records']]
+            matchups=[Matchup.from_document(matchup_document) for matchup_document in
+                      doc['matchups']]
         )
 
 
-class TeamRecord(BaseRecord):
+class UnseededTeam(base.Record):
     """ Team in a bracket field
     :type _id: ObjectId
     :type _name: str
     :type _img_link: str
-    :type _grouping: str
-    :type _seed: int
     """
 
-    def __init__(self, _id=None, name=None, img_link=None, seed=None):
-        # type: (TeamRecord, ObjectId, str, str, str, int) -> None
+    def __init__(self, _id: ObjectId, name: str, img_link: str) -> None:
         self._id = _id
         self._name = name
         self._img_link = img_link
-        self._seed = seed
 
     @property
     def id(self):
@@ -181,6 +160,31 @@ class TeamRecord(BaseRecord):
     def img_link(self, value):
         self._img_link = value
 
+    def to_document(self) -> Dict:
+        return dict(
+            _id=self.id,
+            name=self.name,
+            img_link=self.img_link
+        )
+
+    @classmethod
+    def from_document(cls, doc) -> 'UnseededTeam':
+        return cls(
+            _id=doc['_id'],
+            name=doc['name'],
+            img_link=doc['img_link']
+        )
+
+
+class SeededTeam(UnseededTeam):
+    """
+    :type _seed: int
+    """
+
+    def __init__(self, _id: ObjectId, name: str, img_link: str, seed: Optional[int]) -> None:
+        UnseededTeam.__init__(self, _id, name, img_link)
+        self._seed = seed
+
     @property
     def seed(self):
         return self._seed
@@ -189,37 +193,32 @@ class TeamRecord(BaseRecord):
     def seed(self, value):
         self._seed = value
 
-    def to_document(self):
-        return dict(
-            _id=self.id,
-            name=self.name,
-            img_link=self.img_link,
-            seed=self.seed
-        )
+    def to_document(self) -> Dict:
+        doc = super().to_document()
+        doc['seed'] = self.seed
+        return doc
 
     @classmethod
-    def from_document(cls, doc):
-        seed = doc['seed'] if 'seed' in doc else None
+    def from_document(cls, doc) -> 'SeededTeam':
         return cls(
             _id=doc['_id'],
             name=doc['name'],
             img_link=doc['img_link'],
-            seed=seed
+            seed=doc['seed']
         )
 
 
-class BracketFieldRecord(BaseRecord):
+class BracketField(base.Record):
     """ the set of unique elements to be seeded in bracket instances
-
     :type _id: ObjectId
-    :type _team_records: list of TeamRecord
+    :type _name: str
+    :type _teams: list of UnseededTeam
     """
 
-    def __init__(self, _id, name, team_records):
-        # type: (BracketFieldRecord, ObjectId, str, list[TeamRecord]) -> None
+    def __init__(self, _id: ObjectId, name: str, teams: List[UnseededTeam]) -> None:
         self._id = _id
         self._name = name
-        self._team_records = team_records
+        self._teams = teams
 
     @property
     def id(self):
@@ -238,44 +237,45 @@ class BracketFieldRecord(BaseRecord):
         self._name = value
 
     @property
-    def team_records(self):
-        return self._team_records
+    def teams(self):
+        return self._teams
 
-    @team_records.setter
-    def team_records(self, value):
-        self._team_records = value
+    @teams.setter
+    def teams(self, value):
+        self._teams = value
 
-    def to_document(self):
+    def to_document(self) -> Dict:
         return dict(
             _id=self.id,
             name=self.name,
-            team_records=[team_record.to_document() for team_record in self.team_records]
+            teams=[team.to_document() for team in self.teams]
         )
 
     @classmethod
-    def from_document(cls, doc):
+    def from_document(cls, doc: dict) -> 'BracketField':
         return cls(
             _id=doc['_id'],
             name=doc['name'],
-            team_records=[TeamRecord.from_document(team_document) for team_document in doc['team_records']]
+            teams=[UnseededTeam.from_document(team_document) for team_document in doc['teams']]
         )
 
 
-class BracketInstanceRecord(BaseRecord):
+class BracketInstance(base.Record):
     """ a user’s attempt at filling out a bracket
-
     :type _id: ObjectId
-    :type _round_records: list of RoundRecord
+    :type _rounds: list of Round
     :type _bracket_field_id: ObjectId
     :type _user: str
+    :type _teams: list of UnseededTeam
     """
 
-    def __init__(self, _id, round_records, bracket_field_id=None, user=None):
-        # type: (ObjectId, list[RoundRecord], ObjectId) -> None
+    def __init__(self, _id: ObjectId, rounds: List[Round], bracket_field_id: ObjectId, user: str,
+                 teams: List[SeededTeam]) -> None:
         self._id = _id
-        self._round_records = round_records
+        self._rounds = rounds
         self._bracket_field_id = bracket_field_id
         self._user = user
+        self._teams = teams
 
     @property
     def id(self):
@@ -286,12 +286,12 @@ class BracketInstanceRecord(BaseRecord):
         self._id = value
 
     @property
-    def round_records(self):
-        return self._round_records
+    def rounds(self):
+        return self._rounds
 
-    @round_records.setter
-    def round_records(self, value):
-        self._round_records = value
+    @rounds.setter
+    def rounds(self, value):
+        self._rounds = value
 
     @property
     def bracket_field_id(self):
@@ -309,19 +309,29 @@ class BracketInstanceRecord(BaseRecord):
     def user(self, value):
         self._user = value
 
-    def to_document(self):
+    @property
+    def teams(self):
+        return self._teams
+
+    @teams.setter
+    def teams(self, value):
+        self._teams = value
+
+    def to_document(self) -> Dict:
         return dict(
             _id=self.id,
-            round_records=[round_record.to_document() for round_record in self.round_records],
+            rounds=[round.to_document() for round in self.rounds],
             bracket_field_id=self.bracket_field_id,
-            user=self.user
+            user=self.user,
+            teams=[team.to_document() for team in self.teams]
         )
 
     @classmethod
-    def from_document(cls, doc):
+    def from_document(cls, doc: dict) -> 'BracketInstance':
         return cls(
             _id=doc['_id'],
-            round_records=[RoundRecord.from_document(round_document) for round_document in doc['round_records']],
+            rounds=[Round.from_document(round_document) for round_document in doc['rounds']],
             bracket_field_id=doc['bracket_field_id'],
-            user=doc['user']
+            user=doc['user'],
+            teams=[SeededTeam.from_document(team_document) for team_document in doc['teams']]
         )
