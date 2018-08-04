@@ -1,5 +1,13 @@
-Figure out a way to separate bracket and bracket entry
-Todo:
+Todo
+----
+8-2-18: Turn all classes into modules
+package: bracket
+    init.py
+        - imports the following modules (http://intermediate-and-advanced-software-carpentry.readthedocs.io/en/latest/structuring-python.html)
+        - has the "controller" methods, which should take in and return dtos, and thus manage conversion
+    models.py - both records and dtos, now featuring conversion
+    storage.py - repository & storage methods
+
 
   
 What's the difference between a bracket and a bracket entry?  
@@ -247,6 +255,10 @@ _$ flask/bin/pip install Flask-PyMongo_
 _$ flask/bin/pip install pytest-mock_  
 _$ flask/bin/pip install -U pytest_  
 
+**Setup 2**
+_$pip install -r requirements.txt
+
+
 **Run**  
 _$ ./app.py_  
 
@@ -257,7 +269,7 @@ _$ flask/bin/python -m pytest test/_
 _$ mongo thisorthat_  
 _$ db.subjects.find()_  
 
-_$ curl http://localhost:5000/api/bracket/hatz | json_pp_
+_$ curl http://localhost:5000/api/bracket | json_pp_
 _$ curl http://localhost:5000/api/subjects | json_pp_
 _$ curl http://localhost:5000/api/ranking | json_pp_  
 _$ curl http://localhost:5000/api/scrape -X POST_   
