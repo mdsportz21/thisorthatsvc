@@ -1,3 +1,5 @@
+from typing import List
+
 from bson import ObjectId
 
 from bracket import dto
@@ -24,3 +26,8 @@ def generate_and_store_bracket_instance(bracket_field_id: ObjectId, seeding_stra
 
     # translate record to DTO and return
     return dto.BracketInstance.from_record(bracket_instance)
+
+
+def get_all_bracket_fields() -> List[dto.BracketField]:
+    return [dto.BracketField.from_record(bracket_field_record) for bracket_field_record in
+            storage.get_all_bracket_fields()]

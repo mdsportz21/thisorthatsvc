@@ -48,13 +48,10 @@ def test():
 
 
 # retrieve a list of available brackets
-# TODO
-# @app.route('/api/bracket', methods=['GET'])
-# def get_bracket_fields():
-#     bracket_field_records = bracket_repository.get_all_bracket_field_records()
-#     bracket_field_dtos = [BracketFieldDTO.from_record(bracket_field_record) for bracket_field_record in
-#                           bracket_field_records]
-#     return jsonify(bracketFields=[dto.__dict__ for dto in bracket_field_dtos])
+@app.route('/api/bracket', methods=['GET'])
+def get_bracket_fields():
+    bracket_fields = bracket.get_all_bracket_fields()
+    return jsonify(bracketFields=[bracket_field.to_dict() for bracket_field in bracket_fields])
 
 
 # create a bracket instance

@@ -269,7 +269,7 @@ _$ flask/bin/python -m pytest test/_
 _$ mongo thisorthat_  
 _$ db.subjects.find()_  
 
-_$ curl http://localhost:5000/api/bracket/hatz | json_pp_
+_$ curl http://localhost:5000/api/bracket | json_pp_
 _$ curl http://localhost:5000/api/subjects | json_pp_
 _$ curl http://localhost:5000/api/ranking | json_pp_  
 _$ curl http://localhost:5000/api/scrape -X POST_   
