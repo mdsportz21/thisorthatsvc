@@ -17,9 +17,8 @@ def generate_and_store_bracket_instance(bracket_field_id: ObjectId, seeding_stra
     bracket_field = storage.fetch_bracket_field_by_id(bracket_field_id)
 
     # generate the bracket from the field teams
-    bracket_instance = generator.generate_bracket_instance(bracket_field.teams,
+    bracket_instance = generator.generate_bracket_instance(bracket_field,
                                                            seeding_strategy,
-                                                           bracket_field.id,
                                                            user)
     # store bracket instance
     storage.store_bracket_instance(bracket_instance)

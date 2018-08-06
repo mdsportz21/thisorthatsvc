@@ -264,18 +264,15 @@ class BracketInstance(base.Record):
     """ a user’s attempt at filling out a bracket
     :type _id: ObjectId
     :type _rounds: list of Round
-    :type _bracket_field_id: ObjectId
     :type _user: str
-    :type _teams: list of UnseededTeam
+    :type _bracket_field: BracketField
     """
 
-    def __init__(self, _id: ObjectId, rounds: List[Round], bracket_field_id: ObjectId, user: str,
-                 teams: List[SeededTeam]) -> None:
+    def __init__(self, _id: ObjectId, rounds: List[Round], user: str, bracket_field: Optional[BracketField]) -> None:
         self._id = _id
         self._rounds = rounds
-        self._bracket_field_id = bracket_field_id
         self._user = user
-        self._teams = teams
+        self._bracket_field = bracket_field
 
     @property
     def id(self):
@@ -294,14 +291,6 @@ class BracketInstance(base.Record):
         self._rounds = value
 
     @property
-    def bracket_field_id(self):
-        return self._bracket_field_id
-
-    @bracket_field_id.setter
-    def bracket_field_id(self, value):
-        self._bracket_field_id = value
-
-    @property
     def user(self):
         return self._user
 
@@ -310,20 +299,19 @@ class BracketInstance(base.Record):
         self._user = value
 
     @property
-    def teams(self):
-        return self._teams
+    def bracket_field(self):
+        return self._bracket_field
 
-    @teams.setter
-    def teams(self, value):
-        self._teams = value
+    @bracket_field.setter
+    def bracket_field(self, value):
+        self._bracket_field = value
 
     def to_document(self) -> Dict:
         return dict(
             _id=self.id,
             rounds=[round.to_document() for round in self.rounds],
-            bracket_field_id=self.bracket_field_id,
             user=self.user,
-            teams=[team.to_document() for team in self.teams]
+            bracket_field=self.bracket_field.to_document()
         )
 
     @classmethod
@@ -331,7 +319,6 @@ class BracketInstance(base.Record):
         return cls(
             _id=doc['_id'],
             rounds=[Round.from_document(round_document) for round_document in doc['rounds']],
-            bracket_field_id=doc['bracket_field_id'],
             user=doc['user'],
-            teams=[SeededTeam.from_document(team_document) for team_document in doc['teams']]
+            bracket_field=BracketField.from_document(doc['bracket_field'])
         )

@@ -71,10 +71,10 @@ def create_bracket_instance():
     seeding_strategy = request.json['seedingStrategy']
 
     # generate a new bracket instance
-    bracket_instance_response = bracket.generate_and_store_bracket_instance(bracket_field_id, seeding_strategy, user)
+    bracket_instance = bracket.generate_and_store_bracket_instance(bracket_field_id, seeding_strategy, user)
 
     # send response
-    return jsonify(bracketInstance=bracket_instance_response.to_dict())
+    return jsonify(bracketInstance=bracket_instance.to_dict())
 
 
 # get a bracket instance by bracket id

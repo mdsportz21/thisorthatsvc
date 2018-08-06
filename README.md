@@ -280,7 +280,7 @@ _$ curl http://localhost:5000/api/bracket | json_pp_
 
 Create Bracket
 _$ curl -H "Content-Type: application/json" -X POST -d '{"name": "15"}' http://localhost:5000/api/bracket_
-_$ curl -H "Content-Type: application/json" -X POST -d '{"user": "tim", "seedingStrategy": "random", "bracketFieldId":"5b552322d6f45f189b117fbf"}' http://localhost:5000/api/bracket_
+_$ curl -H "Content-Type: application/json" -X POST -d '{"user": "tim", "seedingStrategy": "random", "bracketFieldId":"5b552322d6f45f189b117fbf"}' http://localhost:5000/api/bracket > bracket.json_
 
 Get Bracket
 _$ curl http://localhost:5000/api/bracket/15 | json_pp > bracket_20180317.json_

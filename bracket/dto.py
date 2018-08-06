@@ -12,6 +12,7 @@ class SeedingStrategy(Enum):
     USER = 2
 
 
+# TODO: rename winnerTeamId to winningTeamId
 class Matchup(base.DTO):
     """
     :type matchupId: str
@@ -88,34 +89,6 @@ class Round(base.DTO):
         )
 
 
-class BracketField(base.DTO):
-    """
-    :type bracketFieldId: str
-    :type name: str
-    :type teamCount: int
-    """
-
-    def __init__(self, bracketFieldId: str, name: str, teamCount: int) -> None:
-        self.bracketFieldId = bracketFieldId
-        self.name = name
-        self.teamCount = teamCount
-
-    @classmethod
-    def from_record(cls, record: record.BracketField) -> 'BracketField':
-        return cls(
-            bracketFieldId=str(record.id),
-            name=record.name,
-            teamCount=len(record.teams)
-        )
-
-    def to_dict(self) -> dict:
-        return dict(
-            bracketFieldId=self.bracketFieldId,
-            name=self.name,
-            teamCount=self.teamCount
-        )
-
-
 class Team(base.DTO):
     """
     :type teamId: str
@@ -140,11 +113,16 @@ class Team(base.DTO):
 
     @classmethod
     def from_record(cls, record: record.SeededTeam) -> 'Team':
+        # Unfortunately BracketField is used for both listing the bracket fields and displaying the bracket
+        # In listing the bracket fields, the teams are unseeded
+        # In displaying the bracket, the teams are seeded
+        # So we need to handle both here so we don't have to create a different type here
+        seed = record.seed if hasattr(record, 'seed') else None
         return cls(
             teamId=str(record.id),
             name=record.name,
             imgLink=record.img_link,
-            seed=record.seed
+            seed=seed
         )
 
     def to_dict(self) -> dict:
@@ -156,29 +134,61 @@ class Team(base.DTO):
         )
 
 
+class BracketField(base.DTO):
+    """
+    :type bracketFieldId: str
+    :type name: str
+    :type teams: List of Team
+    """
+
+    def __init__(self, bracketFieldId: str, name: str, teams: List[Team]) -> None:
+        self.bracketFieldId = bracketFieldId
+        self.name = name
+        self.teams = teams
+
+    @classmethod
+    def from_record(cls, record: record.BracketField) -> 'BracketField':
+        return cls(
+            bracketFieldId=str(record.id),
+            name=record.name,
+            teams=[Team.from_record(team_record) for team_record in record.teams]
+        )
+
+    def to_dict(self) -> dict:
+        return dict(
+            bracketFieldId=self.bracketFieldId,
+            name=self.name,
+            teams=[team.to_dict() for team in self.teams]
+        )
+
+# Validations on save
+# 1. first round matches what is in the DB
+# 2. all winners come from previous round
+# How to save this to db with results
+# 1. save rounds only
+# TODO: add seeding hash property to BracketInstance
+# this should encode the seeding used for this bracket field
 class BracketInstance(base.DTO):
     """
     :type bracketInstanceId: str
     :type rounds: list of Round
-    :type bracketFieldId: str
-    :type teams: list of Team
+    :type bracketField: BracketField
     :type user: str
     """
 
-    def __init__(self, bracketInstanceId: str, rounds: List[Round], bracketFieldId: str, teams: List[Team],
-                 user: str) -> None:
+    def __init__(self, bracketInstanceId: str, rounds: List[Round], bracketField: BracketField, user: str) -> None:
         self.bracketInstanceId = bracketInstanceId
         self.rounds = rounds
-        self.bracketFieldId = bracketFieldId
-        self.teams = teams
+        self.bracketField = bracketField
         self.user = user
 
     def to_record(self) -> record.BracketInstance:
         return record.BracketInstance(
             _id=ObjectId(self.bracketInstanceId),
-            bracket_field_id=ObjectId(self.bracketFieldId),
             rounds=[round.to_record() for round in self.rounds],
-            teams=[team.to_record() for team in self.teams],
+            # bracket_field not needed since we won't be saving the bracket field from the UI
+            # Instead, we should fetch it fresh from the DB
+            bracket_field=None,
             user=self.user
         )
 
@@ -187,8 +197,7 @@ class BracketInstance(base.DTO):
         return cls(
             bracketInstanceId=str(record.id),
             rounds=[Round.from_record(round_record) for round_record in record.rounds],
-            bracketFieldId=str(record.bracket_field_id),
-            teams=[Team.from_record(team_record) for team_record in record.teams],
+            bracketField=BracketField.from_record(record.bracket_field),
             user=record.user
         )
 
@@ -196,7 +205,6 @@ class BracketInstance(base.DTO):
         return dict(
             bracketInstanceId=self.bracketInstanceId,
             rounds=[round.to_dict() for round in self.rounds],
-            bracketFieldId=self.bracketFieldId,
-            teams=[team.to_dict() for team in self.teams],
+            bracketField=self.bracketField.to_dict(),
             user=self.user
         )
