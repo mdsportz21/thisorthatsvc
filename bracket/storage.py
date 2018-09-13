@@ -32,3 +32,8 @@ def store_bracket_instance(bracket_instance: record.BracketInstance) -> None:
                                               replacement=bracket_instance.to_document(),
                                               upsert=True,
                                               return_document=ReturnDocument.AFTER)
+
+
+def fetch_bracket_instance(bracket_field_id: ObjectId, bracket_instance_id: ObjectId) -> record.BracketInstance:
+    bracket_instance_document = db.bracket_instances.find_one({'_id': bracket_instance_id, 'bracket_field._id': bracket_field_id})
+    return record.BracketInstance.from_document(bracket_instance_document)

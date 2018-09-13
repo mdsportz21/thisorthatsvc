@@ -57,15 +57,15 @@ def get_bracket_fields():
 # create a bracket instance
 # params include bracket name (required), authenticated user, and seed order (random or by user's previous results)
 # raise error if user is not authenticated to create a bracket instance for this user
-@app.route('/api/bracket', methods=['POST'])
-def create_bracket_instance():
-    validate_post(request, ['user', 'seedingStrategy', 'bracketFieldId'])
+@app.route('/api/bracket/<bracket_field_id_str>/instance', methods=['POST'])
+def create_bracket_instance(bracket_field_id_str: str):
+    validate_post(request, ['user', 'seedingStrategy'])
+
+    # id of bracket field to create bracket instance from
+    bracket_field_id = ObjectId(bracket_field_id_str)
 
     # user to create bracket for
     user = request.json['user']
-
-    # id of bracket field to create bracket instance from
-    bracket_field_id = ObjectId(request.json['bracketFieldId'])
 
     # random or by user's ranking (if the user has no history, default to random)
     seeding_strategy = request.json['seedingStrategy']
@@ -79,16 +79,23 @@ def create_bracket_instance():
 
 # get a bracket instance by bracket id
 # raise error if user is not authenticated to fetch this bracket instance
-@app.route('/api/bracket_instance/<name>')
-def get_bracket_instance(bracket_instance_id):
-    raise NotImplementedError
+@app.route('/api/bracket/<bracket_field_id_str>/instance/<bracket_instance_id_str>', methods=['GET'])
+def get_bracket_instance(bracket_field_id_str: str, bracket_instance_id_str: str):
+    bracket_field_id = ObjectId(bracket_field_id_str)
+    bracket_instance_id = ObjectId(bracket_instance_id_str)
+    bracket_instance = bracket.fetch_bracket_instance(bracket_field_id, bracket_instance_id)
+    return jsonify(bracketInstance=bracket_instance.to_dict())
 
 
 # save a bracket instance
 # params include: bracket name, results
 # raise error if user is not authenticated to save this bracket instance
-@app.route('/api/bracket_instance/results', methods=['POST'])
-def save_bracket_results():
+@app.route('/api/bracket/<bracket_field_id_str>/instance/<bracket_instance_id_str>', methods=['POST'])
+def save_bracket_results(bracket_field_id_str: str, bracket_instance_id_str: str):
+    validate_post(request, ['user', 'seedingStrategy'])
+    bracket_field_id = ObjectId(bracket_field_id_str)
+    bracket_instance_id = ObjectId(bracket_instance_id_str)
+
     raise NotImplementedError
 
 

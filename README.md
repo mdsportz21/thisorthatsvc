@@ -260,7 +260,8 @@ _$pip install -r requirements.txt
 
 
 **Run**  
-_$ ./app.py_  
+_$ source ./bin/activate
+_$ python runserver.py  
 
 **Unit Test**  
 _$ flask/bin/python -m pytest test/_  

@@ -30,3 +30,8 @@ def generate_and_store_bracket_instance(bracket_field_id: ObjectId, seeding_stra
 def get_all_bracket_fields() -> List[dto.BracketField]:
     return [dto.BracketField.from_record(bracket_field_record) for bracket_field_record in
             storage.get_all_bracket_fields()]
+
+
+def fetch_bracket_instance(bracket_field_id: ObjectId, bracket_instance_id: ObjectId) -> dto.BracketInstance:
+    bracket_instance = storage.fetch_bracket_instance(bracket_field_id, bracket_instance_id)
+    return dto.BracketInstance.from_record(bracket_instance)
