@@ -286,12 +286,19 @@ _$ curl -H "Content-Type: application/json" -X POST -d '{"user": "tim", "seeding
 Get Bracket
 _$ curl http://localhost:5000/api/bracket/15 | json_pp > bracket_20180317.json_
 
+**Deploy to Server**
+_$ cd thisorthatsvc_
+_$ git push heroku master_
+
+
 
 **Sources**
 1. https://blog.miguelgrinberg.com/post/designing-a-restful-api-with-python-and-flask
 2. https://github.com/adam-p/markdown-here/wiki/Markdown-Cheatsheet
 3. https://flask-cors.readthedocs.io/en/latest/
 4. https://flask-pymongo.readthedocs.io/en/latest/
+5. https://www.codexpedia.com/devops/mongodb-authentication-setting/
+6. https://devcenter.heroku.com/articles/config-vars
 
 **Troubleshooting**
 1. https://stackoverflow.com/questions/11150343/slow-requests-on-local-flask-server

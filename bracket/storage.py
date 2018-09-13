@@ -1,3 +1,4 @@
+import os
 from typing import List
 
 from bson import ObjectId
@@ -5,8 +6,12 @@ from pymongo import MongoClient, ReturnDocument
 
 from bracket import record
 
-client = MongoClient('localhost', 27017)
-db = client.thisorthat
+mongo_host = os.environ.get('MONGO_HOST') or 'localhost'
+mongo_port = os.environ.get('MONGO_PORT') or 27017
+mongo_db = os.environ.get('MONGO_DB') or 'thisorthat'
+
+client = MongoClient(mongo_host, mongo_port)
+db = client[mongo_db]
 
 
 def store_bracket_field(bracket_field_name: str, teams: List[record.UnseededTeam]) -> None:
@@ -35,5 +40,6 @@ def store_bracket_instance(bracket_instance: record.BracketInstance) -> None:
 
 
 def fetch_bracket_instance(bracket_field_id: ObjectId, bracket_instance_id: ObjectId) -> record.BracketInstance:
-    bracket_instance_document = db.bracket_instances.find_one({'_id': bracket_instance_id, 'bracket_field._id': bracket_field_id})
+    bracket_instance_document = db.bracket_instances.find_one(
+        {'_id': bracket_instance_id, 'bracket_field._id': bracket_field_id})
     return record.BracketInstance.from_document(bracket_instance_document)
