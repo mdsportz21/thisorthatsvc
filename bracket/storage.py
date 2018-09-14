@@ -7,7 +7,7 @@ from pymongo import MongoClient, ReturnDocument
 from bracket import record
 
 mongo_host = os.environ.get('MONGO_HOST') or 'localhost'
-mongo_port = os.environ.get('MONGO_PORT') or 27017
+mongo_port = int(os.environ.get('MONGO_PORT') or 27017)
 mongo_db = os.environ.get('MONGO_DB') or 'thisorthat'
 
 client = MongoClient(mongo_host, mongo_port)

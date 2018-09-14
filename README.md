@@ -289,6 +289,7 @@ _$ curl http://localhost:5000/api/bracket/15 | json_pp > bracket_20180317.json_
 **Deploy to Server**
 _$ cd thisorthatsvc_
 _$ git push heroku master_
+_$ heroku logs --tail_
 
 
 
