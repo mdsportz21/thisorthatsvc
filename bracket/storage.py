@@ -13,9 +13,9 @@ mongo_db = os.environ.get('MONGO_DB') or 'thisorthat'
 mongo_username = os.environ.get('MONGO_USERNAME')
 mongo_password = os.environ.get('MONGO_PASSWORD')
 
-client = MongoClient('mongodb://%s:%s@%s:%s' % (
+client = MongoClient('mongodb://%s:%s@%s:%s/%s' % (
     urllib.parse.quote_plus(mongo_username), urllib.parse.quote_plus(mongo_password), mongo_host,
-    mongo_port)) if mongo_username else MongoClient(mongo_host, mongo_port)
+    mongo_port, mongo_db)) if mongo_username else MongoClient(mongo_host, mongo_port)
 
 db = client[mongo_db]
 
