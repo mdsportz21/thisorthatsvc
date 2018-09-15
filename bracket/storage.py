@@ -1,4 +1,5 @@
 import os
+import urllib.parse
 from typing import List
 
 from bson import ObjectId
@@ -9,8 +10,13 @@ from bracket import record
 mongo_host = os.environ.get('MONGO_HOST') or 'localhost'
 mongo_port = int(os.environ.get('MONGO_PORT') or 27017)
 mongo_db = os.environ.get('MONGO_DB') or 'thisorthat'
+mongo_username = os.environ.get('MONGO_USERNAME')
+mongo_password = os.environ.get('MONGO_PASSWORD')
 
-client = MongoClient(mongo_host, mongo_port)
+client = MongoClient('mongodb://%s:%s@%s:%s' % (
+    urllib.parse.quote_plus(mongo_username), urllib.parse.quote_plus(mongo_password), mongo_host,
+    mongo_port)) if mongo_username else MongoClient(mongo_host, mongo_port)
+
 db = client[mongo_db]
 
 

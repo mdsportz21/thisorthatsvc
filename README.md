@@ -1,5 +1,10 @@
 Todo
 ----
+9-14-18:
+1. Restore mongo locally from data dump (/Users/mdsportz21/Documents/devel/mongodb/dumps/user_dumps/thisorthat.20180912)
+2. Migrate bracket_fields to server
+3. Test that bracket field fetch works on server
+
 8-2-18: Turn all classes into modules
 package: bracket
     init.py
@@ -300,6 +305,7 @@ _$ heroku logs --tail_
 4. https://flask-pymongo.readthedocs.io/en/latest/
 5. https://www.codexpedia.com/devops/mongodb-authentication-setting/
 6. https://devcenter.heroku.com/articles/config-vars
+7. http://api.mongodb.com/python/current/examples/authentication.html - authenticating mlab queries
 
 **Troubleshooting**
 1. https://stackoverflow.com/questions/11150343/slow-requests-on-local-flask-server
