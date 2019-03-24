@@ -1,5 +1,89 @@
+**Run**
+_$ source ./bin/activate
+_$ python runserver.py
+
+**Deploy to Server**
+_$ cd thisorthatsvc_
+_$ git push heroku master_
+_$ heroku logs --tail_
+
+**Setup**
+_$ virtualenv flask_
+_$ flask/bin/pip install flask_
+_$ flask/bin/pip install flask-restful_
+_$ flask/bin/pip install flask_cors_
+_$ flask/bin/pip install Flask-PyMongo_
+_$ flask/bin/pip install pytest-mock_
+_$ flask/bin/pip install -U pytest_
+
+**Setup 2**
+_$pip install -r requirements.txt
+
+**Unit Test**
+_$ flask/bin/python -m pytest test/_
+
+**Test**
+_$ mongo thisorthat_
+_$ db.subjects.find()_
+
+_$ curl http://localhost:5000/api/bracket | json_pp_
+_$ curl http://localhost:5000/api/subjects | json_pp_
+_$ curl http://localhost:5000/api/ranking | json_pp_
+_$ curl http://localhost:5000/api/scrape -X POST_
+_$ curl http://localhost:5000/api/import -X POST_
+
+Get a list of brackets
+_$ curl http://localhost:5000/api/bracket | json_pp_
+
+Create Bracket
+_$ curl -H "Content-Type: application/json" -X POST -d '{"seedingStrategy": "random", "bracketSize":8}' http://localhost:5000/api/bracket/5b552322d6f45f189b117fbf/demo_
+_$ curl -H "Content-Type: application/json" -X POST -d '{"name": "15"}' http://localhost:5000/api/bracket_
+_$ curl -H "Content-Type: application/json" -X POST -d '{"user": "tim", "seedingStrategy": "random", "bracketFieldId":"5b552322d6f45f189b117fbf"}' http://localhost:5000/api/bracket > bracket.json_
+
+Get Bracket
+_$ curl http://localhost:5000/api/bracket/15 | json_pp > bracket_20180317.json_
+
+
+
+**Sources**
+1. https://blog.miguelgrinberg.com/post/designing-a-restful-api-with-python-and-flask
+2. https://github.com/adam-p/markdown-here/wiki/Markdown-Cheatsheet
+3. https://flask-cors.readthedocs.io/en/latest/
+4. https://flask-pymongo.readthedocs.io/en/latest/
+5. https://www.codexpedia.com/devops/mongodb-authentication-setting/
+6. https://devcenter.heroku.com/articles/config-vars
+7. http://api.mongodb.com/python/current/examples/authentication.html - authenticating mlab queries
+8. https://github.com/auth0/auth0-python - auth0 python (might need to use this)
+9. https://auth0.com/docs/api-auth/tutorials/verify-access-token - verify token on backend
+10. https://auth0.com/blog/navigating-rs256-and-jwks/ - verify token example
+11. https://auth0.com/learn/json-web-tokens/ - front end token format
+
+**Troubleshooting**
+1. https://stackoverflow.com/questions/11150343/slow-requests-on-local-flask-server
+
 Todo
 ----
+10-11-18:
+0. Install dropdown component
+
+9-29-18:
+0. Draw the page
+1. show dropdown of bracket instances or login button at top
+2. Show collapsible dropdown with bracket fields list below bracket instance / login section
+3. Show (unauthenticated) demo bracket or selected  to home page below bracket fields dropdown
+c. show demo below
+2. Add label to existing bracket field list section.
+3. Create bracket instance list section under existing bracket field list section.
+a. "Create new bracket" should be permanent top item of the bracket instance list
+b. Display created on / updated on in bracket instance list
+4. Load existing bracket instance
+5. Autogenerate name for new bracket instance
+6. Display bracket instance name
+7. Make bracket instance name editable
+8. Implement bracket instance save on frontend
+9. Implement bracket instance save validation on backend
+
+
 9-14-18:
 1. Restore mongo locally from data dump (/Users/mdsportz21/Documents/devel/mongodb/dumps/user_dumps/thisorthat.20180912)
 2. Migrate bracket_fields to server
@@ -250,62 +334,3 @@ a. Create util for copying and appending to CSV
 b. Write subjects to csv using Squarespace product csv template  
 c. Verify that CSV can be uploaded to Squarespace Commerce
 1. Create class level normalizer (i.e. A, Class-A and Class A => Class A)
-  
-**Setup**  
-_$ virtualenv flask_  
-_$ flask/bin/pip install flask_  
-_$ flask/bin/pip install flask-restful_  
-_$ flask/bin/pip install flask_cors_  
-_$ flask/bin/pip install Flask-PyMongo_  
-_$ flask/bin/pip install pytest-mock_  
-_$ flask/bin/pip install -U pytest_  
-
-**Setup 2**
-_$pip install -r requirements.txt
-
-
-**Run**  
-_$ source ./bin/activate
-_$ python runserver.py  
-
-**Unit Test**  
-_$ flask/bin/python -m pytest test/_  
-
-**Test**  
-_$ mongo thisorthat_  
-_$ db.subjects.find()_  
-
-_$ curl http://localhost:5000/api/bracket | json_pp_
-_$ curl http://localhost:5000/api/subjects | json_pp_
-_$ curl http://localhost:5000/api/ranking | json_pp_  
-_$ curl http://localhost:5000/api/scrape -X POST_   
-_$ curl http://localhost:5000/api/import -X POST_
-
-Get a list of brackets
-_$ curl http://localhost:5000/api/bracket | json_pp_
-
-Create Bracket
-_$ curl -H "Content-Type: application/json" -X POST -d '{"name": "15"}' http://localhost:5000/api/bracket_
-_$ curl -H "Content-Type: application/json" -X POST -d '{"user": "tim", "seedingStrategy": "random", "bracketFieldId":"5b552322d6f45f189b117fbf"}' http://localhost:5000/api/bracket > bracket.json_
-
-Get Bracket
-_$ curl http://localhost:5000/api/bracket/15 | json_pp > bracket_20180317.json_
-
-**Deploy to Server**
-_$ cd thisorthatsvc_
-_$ git push heroku master_
-_$ heroku logs --tail_
-
-
-
-**Sources**
-1. https://blog.miguelgrinberg.com/post/designing-a-restful-api-with-python-and-flask
-2. https://github.com/adam-p/markdown-here/wiki/Markdown-Cheatsheet
-3. https://flask-cors.readthedocs.io/en/latest/
-4. https://flask-pymongo.readthedocs.io/en/latest/
-5. https://www.codexpedia.com/devops/mongodb-authentication-setting/
-6. https://devcenter.heroku.com/articles/config-vars
-7. http://api.mongodb.com/python/current/examples/authentication.html - authenticating mlab queries
-
-**Troubleshooting**
-1. https://stackoverflow.com/questions/11150343/slow-requests-on-local-flask-server

@@ -1,5 +1,6 @@
 import os
 import urllib.parse
+from datetime import datetime
 from typing import List
 
 from bson import ObjectId
@@ -45,7 +46,27 @@ def store_bracket_instance(bracket_instance: record.BracketInstance) -> None:
                                               return_document=ReturnDocument.AFTER)
 
 
+def update_bracket_instance(bracket_instance: record.BracketInstance) -> None:
+    db.bracket_instances.update_one(filter={'_id': bracket_instance.id},
+                                    update={
+                                        '$set': {
+                                            'rounds': [round.to_document() for round in bracket_instance.rounds],
+                                            'updated_on': datetime.utcnow()
+                                        }
+                                    })
+
+
 def fetch_bracket_instance(bracket_field_id: ObjectId, bracket_instance_id: ObjectId) -> record.BracketInstance:
-    bracket_instance_document = db.bracket_instances.find_one(
-        {'_id': bracket_instance_id, 'bracket_field._id': bracket_field_id})
+    bracket_instance_document = db.bracket_instances.find_one({
+        '_id': bracket_instance_id,
+        'bracket_field._id': bracket_field_id
+    })
     return record.BracketInstance.from_document(bracket_instance_document)
+
+
+def fetch_bracket_instances(bracket_field_id: ObjectId, user: str) -> List[record.BracketInstance]:
+    bracket_instance_documents = db.bracket_instances.find({
+        'bracket_field._id': bracket_field_id,
+        'user': user
+    })
+    return [record.BracketInstance.from_document(doc) for doc in bracket_instance_documents]

@@ -1,5 +1,6 @@
 import math
 import random
+from datetime import datetime
 from typing import List, Tuple
 
 from bson import ObjectId
@@ -10,9 +11,11 @@ from bracket.record import BracketField
 
 
 def generate_bracket_instance(bracket_field: BracketField, seeding_strategy: SeedingStrategy,
-                              user: str) -> record.BracketInstance:
+                              user: str, bracket_size: int = None) -> record.BracketInstance:
     # order the field according to the seeding strategy
     unseeded_teams = list(bracket_field.teams)
+    if bracket_size is not None:
+        unseeded_teams = unseeded_teams[0:bracket_size]
     if seeding_strategy == SeedingStrategy.RANDOM:
         random.shuffle(unseeded_teams)
     elif seeding_strategy == SeedingStrategy.USER:
@@ -28,7 +31,8 @@ def generate_bracket_instance(bracket_field: BracketField, seeding_strategy: See
     # generate the bracket
     rounds = generate_rounds(tuple(seeded_teams))
 
-    return record.BracketInstance(_id=ObjectId(), rounds=rounds, user=user, bracket_field=bracket_field)
+    return record.BracketInstance(_id=ObjectId(), rounds=rounds, user=user, bracket_field=bracket_field,
+                                  created_on=datetime.utcnow(), updated_on=datetime.utcnow())
 
 
 def get_num_play_in_games(num_teams: int) -> int:

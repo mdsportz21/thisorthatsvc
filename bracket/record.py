@@ -1,3 +1,4 @@
+from datetime import datetime
 from typing import List, Optional, Dict
 
 from bson import ObjectId
@@ -266,13 +267,18 @@ class BracketInstance(base.Record):
     :type _rounds: list of Round
     :type _user: str
     :type _bracket_field: BracketField
+    :type _created_on: datetime
+    :type _updated_on: datetime
     """
 
-    def __init__(self, _id: ObjectId, rounds: List[Round], user: str, bracket_field: Optional[BracketField]) -> None:
+    def __init__(self, _id: ObjectId, rounds: List[Round], user: str, bracket_field: Optional[BracketField],
+                 created_on: datetime, updated_on: datetime) -> None:
         self._id = _id
         self._rounds = rounds
         self._user = user
         self._bracket_field = bracket_field
+        self._created_on = created_on
+        self._updated_on = updated_on
 
     @property
     def id(self):
@@ -306,12 +312,30 @@ class BracketInstance(base.Record):
     def bracket_field(self, value):
         self._bracket_field = value
 
+    @property
+    def created_on(self):
+        return self._created_on
+
+    @created_on.setter
+    def created_on(self, value):
+        self._created_on = value
+
+    @property
+    def updated_on(self):
+        return self._updated_on
+
+    @updated_on.setter
+    def updated_on(self, value):
+        self._updated_on = value
+
     def to_document(self) -> Dict:
         return dict(
             _id=self.id,
             rounds=[round.to_document() for round in self.rounds],
             user=self.user,
-            bracket_field=self.bracket_field.to_document()
+            bracket_field=self.bracket_field.to_document(),
+            created_on=self.created_on,
+            updated_on=self.updated_on
         )
 
     @classmethod
@@ -320,5 +344,7 @@ class BracketInstance(base.Record):
             _id=doc['_id'],
             rounds=[Round.from_document(round_document) for round_document in doc['rounds']],
             user=doc['user'],
-            bracket_field=BracketField.from_document(doc['bracket_field'])
+            bracket_field=BracketField.from_document(doc['bracket_field']),
+            created_on=doc['created_on'],
+            updated_on=doc['updated_on']
         )

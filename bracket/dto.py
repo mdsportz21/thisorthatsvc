@@ -1,6 +1,7 @@
 from enum import Enum
 from typing import List
 
+import rfc3339
 from bson import ObjectId
 
 import base
@@ -138,28 +139,25 @@ class BracketField(base.DTO):
     """
     :type bracketFieldId: str
     :type name: str
-    :type teams: List of Team
     """
 
-    def __init__(self, bracketFieldId: str, name: str, teams: List[Team]) -> None:
+    def __init__(self, bracketFieldId: str, name: str) -> None:
         self.bracketFieldId = bracketFieldId
         self.name = name
-        self.teams = teams
 
     @classmethod
     def from_record(cls, record: record.BracketField) -> 'BracketField':
         return cls(
             bracketFieldId=str(record.id),
             name=record.name,
-            teams=[Team.from_record(team_record) for team_record in record.teams]
         )
 
     def to_dict(self) -> dict:
         return dict(
             bracketFieldId=self.bracketFieldId,
             name=self.name,
-            teams=[team.to_dict() for team in self.teams]
         )
+
 
 # Validations on save
 # 1. first round matches what is in the DB
@@ -174,13 +172,18 @@ class BracketInstance(base.DTO):
     :type rounds: list of Round
     :type bracketField: BracketField
     :type user: str
+    :type createdOn: str
+    :type updatedOn: str
     """
 
-    def __init__(self, bracketInstanceId: str, rounds: List[Round], bracketField: BracketField, user: str) -> None:
+    def __init__(self, bracketInstanceId: str, rounds: List[Round], bracketField: BracketField, user: str,
+                 createdOn: str, updatedOn: str) -> None:
         self.bracketInstanceId = bracketInstanceId
         self.rounds = rounds
         self.bracketField = bracketField
         self.user = user
+        self.createdOn = createdOn
+        self.updatedOn = updatedOn
 
     def to_record(self) -> record.BracketInstance:
         return record.BracketInstance(
@@ -189,7 +192,9 @@ class BracketInstance(base.DTO):
             # bracket_field not needed since we won't be saving the bracket field from the UI
             # Instead, we should fetch it fresh from the DB
             bracket_field=None,
-            user=self.user
+            user=self.user,
+            created_on=rfc3339.parse_datetime(self.createdOn),
+            updated_on=rfc3339.parse_datetime(self.updatedOn)
         )
 
     @classmethod
@@ -198,7 +203,9 @@ class BracketInstance(base.DTO):
             bracketInstanceId=str(record.id),
             rounds=[Round.from_record(round_record) for round_record in record.rounds],
             bracketField=BracketField.from_record(record.bracket_field),
-            user=record.user
+            user=record.user,
+            createdOn=rfc3339.datetimetostr(record.created_on),
+            updatedOn=rfc3339.datetimetostr(record.updated_on)
         )
 
     def to_dict(self) -> dict:
@@ -206,5 +213,7 @@ class BracketInstance(base.DTO):
             bracketInstanceId=self.bracketInstanceId,
             rounds=[round.to_dict() for round in self.rounds],
             bracketField=self.bracketField.to_dict(),
-            user=self.user
+            user=self.user,
+            createdOn=self.createdOn,
+            updatedOn=self.updatedOn
         )
