@@ -18,12 +18,11 @@
 
 * TEAM has name, ID, image link
 * PARTICIPANT is a TEAM with a SEED
-* SEED is a unique identifier (number)
-* MATCHUP has two PARTICIPANTS, a WINNER, and a source MATCHUP
-* WINNER is a PARTICIPANT
-* BRACKET is the final MATCHUP, has an ID, user, created timestamp, last modified timestamp, hash of FIELD, hash of SEEDING
-* FIELD is a set of TEAMS
-* SEEDING is a set of PARTICIPANTS
+  * SEED is a unique identifier (number)
+* MATCHUP has two PARTICIPANTS and a source MATCHUP
+* BRACKET is the final MATCHUP, has an ID, user, created timestamp, last modified timestamp, hash of tuple of FIELD, hash of tuple of SEEDING
+  * FIELD is a set of TEAMS
+  * SEEDING is a set of PARTICIPANTS
 
 ## Collections
 
