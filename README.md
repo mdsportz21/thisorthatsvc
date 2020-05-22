@@ -1,39 +1,39 @@
 **Run**
-_$ source ./bin/activate
-_$ python runserver.py
+_$ source ./bin/activate  
+_$ python runserver.py  
 
 **Deploy to Server**
-_$ cd thisorthatsvc_
-_$ git push heroku master_
-_$ heroku logs --tail_
+_$ cd thisorthatsvc_  
+_$ git push heroku master_  
+_$ heroku logs --tail_  
 
 **Setup**
-_$ virtualenv flask_
-_$ flask/bin/pip install flask_
-_$ flask/bin/pip install flask-restful_
-_$ flask/bin/pip install flask_cors_
-_$ flask/bin/pip install Flask-PyMongo_
-_$ flask/bin/pip install pytest-mock_
-_$ flask/bin/pip install -U pytest_
+_$ virtualenv flask_  
+_$ flask/bin/pip install flask_  
+_$ flask/bin/pip install flask-restful_  
+_$ flask/bin/pip install flask_cors_  
+_$ flask/bin/pip install Flask-PyMongo_  
+_$ flask/bin/pip install pytest-mock_  
+_$ flask/bin/pip install -U pytest_  
 
 **Setup 2**
-_$pip install -r requirements.txt
+_$pip install -r requirements.txt  
 
 **Unit Test**
-_$ flask/bin/python -m pytest test/_
+_$ flask/bin/python -m pytest test/_  
 
 **Test**
-_$ mongo thisorthat_
-_$ db.subjects.find()_
+_$ mongo thisorthat_  
+_$ db.subjects.find()_  
 
-_$ curl http://localhost:5000/api/bracket | json_pp_
-_$ curl http://localhost:5000/api/subjects | json_pp_
-_$ curl http://localhost:5000/api/ranking | json_pp_
-_$ curl http://localhost:5000/api/scrape -X POST_
-_$ curl http://localhost:5000/api/import -X POST_
+_$ curl http://localhost:5000/api/bracket | json_pp_  
+_$ curl http://localhost:5000/api/subjects | json_pp_  
+_$ curl http://localhost:5000/api/ranking | json_pp_  
+_$ curl http://localhost:5000/api/scrape -X POST_  
+_$ curl http://localhost:5000/api/import -X POST_  
 
 Get a list of brackets
-_$ curl http://localhost:5000/api/bracket | json_pp_
+_$ curl http://localhost:5000/api/bracket | json_pp_  
 
 Create Bracket
 _$ curl -H "Content-Type: application/json" -X POST -d '{"seedingStrategy": "random", "bracketSize":8}' http://localhost:5000/api/bracket/5b552322d6f45f189b117fbf/demo_
