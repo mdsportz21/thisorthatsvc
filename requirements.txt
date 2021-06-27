@@ -33,4 +33,4 @@ tornado==4.5.1
 virtualenv==15.2.0
 virtualenv-clone==0.3.0
 virtualenvwrapper==4.8.2
-Werkzeug==0.12.2
+Werkzeug==0.15.3
